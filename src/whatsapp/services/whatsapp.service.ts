@@ -131,6 +131,7 @@ import PrismType from '@prisma/client';
 import * as s3Service from '../../integrations/minio/minio.utils';
 import { RedisCache } from '../../cache/redis';
 import { TypebotSessionService } from '../../integrations/typebot/typebot.service';
+import EventBus from '../../events/event-bus';
 
 type InstanceQrCode = {
   count: number;
@@ -1249,6 +1250,8 @@ export class WAStartupService {
         });
         messageSent.id = id;
       }
+
+      EventBus.sendMessage(messageSent.content.toString());
 
       this.sendDataWebhook('sendMessage', messageSent).catch((error) =>
         this.logger.error(error),
