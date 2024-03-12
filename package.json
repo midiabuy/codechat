@@ -44,6 +44,7 @@
     "@adiwajshing/keyed-db": "^0.2.4",
     "@hapi/boom": "^10.0.1",
     "@prisma/client": "^5.7.0",
+    "@tuxjs/eventbus": "^1.0.3",
     "@whiskeysockets/baileys": "^6.6.0",
     "axios": "^1.6.2",
     "class-validator": "^0.14.0",
@@ -71,6 +72,7 @@
     "redis": "^4.6.11",
     "socket.io": "^4.7.4",
     "swagger-ui-express": "^5.0.0",
+    "ts-bus": "^2.3.1",
     "ts-event-bus": "^4.2.0",
     "uuid": "^9.0.0",
     "yamljs": "^0.3.0"
@@ -89,6 +91,7 @@
     "@types/qrcode-terminal": "^0.12.2",
     "@types/swagger-ui-express": "^4.1.6",
     "@types/uuid": "^9.0.7",
+    "@types/ws": "^8.5.10",
     "@types/yamljs": "^0.2.34",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
     "@typescript-eslint/parser": "^6.13.1",

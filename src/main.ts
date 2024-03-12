@@ -39,8 +39,8 @@ import { Logger } from './config/logger.config';
 import { AppModule } from './app.module';
 import 'express-async-errors';
 
-import http from 'http';
-import { Server as WebSocketServer } from 'socket.io'; // Importação necessária para o WebSocket
+// import http from 'http';
+// import { Server as WebSocketServer } from 'socket.io'; // Importação necessária para o WebSocket
 
 const context = new Map<string, any>();
 
@@ -56,24 +56,7 @@ export async function bootstrap() {
 
   const httpServer = configService.get<HttpServer>('SERVER');
 
-  const server = http.createServer(context.get('app'));
-
-  logger.log('INICIANDO SERVIDOR WEBSOCKET');
-
-  const io = new WebSocketServer(server, { cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  }});
-
-  io.on('connection', (socket) => {
-    // Lógica para manipular conexões WebSocket
-    logger.log('a user connected');
-    socket.on('disconnect', () => {
-      logger.log('user disconnected');
-    });
-  });
-
-  server.listen(httpServer.PORT, () => {
+  context.get("server").listen(httpServer.PORT, () => {
     logger.log('HTTP' + ' - ON: ' + httpServer.PORT);
     new Logger(configService, 'Swagger Docs').warn(
       `

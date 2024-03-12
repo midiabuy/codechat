@@ -45,7 +45,6 @@
           document.getElementById('qrcode').src = data.base64;
         })
     }
-
     document.getElementById("instance-form").addEventListener("submit", (event) => {
       event.preventDefault();
       const instanceName = document.getElementById("input-instance").value;
@@ -54,42 +53,65 @@
 
   </script>
 
-  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
-  <script>
-    const socket = io("ws://127.0.0.1:8084");
-    // let socket = new WebSocket("ws://127.0.0.1:3000");
-    // console.log("Attempting Connection...");
+<script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
 
-    socket.on("connect", () => {
-      console.log(socket.id); // x8WIv7-mJelg7on_ALbx
-    });
+<script>
+  const socket = io("ws://127.0.0.1:8084", {
+    transports: ['websocket'],
+    auth: {
+      serverOffset: 0,
+    },
+    retries: 3,
+    autoConnect: true,
+    pingTimeout: 60000,
+    pingInterval: 60000,
+    upgradeTimeout: 60000,
+    connectionStateRecovery: {},
+  });
+  // let socket = new WebSocket("ws://127.0.0.1:3001");
+  console.log("Attempting Connection...");
 
-    socket.on("disconnect", () => {
-      console.log(socket.id); // undefined
-    });
+  socket.on("connect", () => {
+    console.log('connected')
+  });
 
-    // socket.onopen = () => {
-    //     console.log("Successfully Connected");
-    // };
+  socket.on("onmessage", (message, offset) => {
+      socket.auth.serverOffset = offset;
+      console.log(message)
+  });
 
-    // socket.onmessage = event => {
-    //     console.log("Received message:", event.data);
-    //     displayMessage(event.data);
-    // };
+  socket.on('connection_error', e => {
+    console.log(e)
+  })
 
-    // socket.onclose = event => {
-    //     console.log("Socket Closed Connection: ", event);
-    //     socket.send("Client Closed!");
-    // };
+  socket.on("disconnect", (e) => {
+    console.log(e)
+    socket.connect();
+  });
 
-    // socket.onerror = error => {
-    //     console.log("Socket Error: ", error);
-    // };
 
-    // function displayMessage(message) {
-    //     console.log(message);
-    // }
+
+  // socket.onopen = () => {
+  //     console.log("Successfully Connected");
+  // };
+
+  // socket.onmessage = event => {
+  //     console.log("Received message:", event.data);
+  //     displayMessage(event.data);
+  // };
+
+  // socket.onclose = event => {
+  //     console.log("Socket Closed Connection: ", event);
+  //     socket.send("Client Closed!");
+  // };
+
+  // socket.onerror = error => {
+  //     console.log("Socket Error: ", error);
+  // };
+
+  // function displayMessage(message) {
+  //     console.log(message);
+  // }
 </script>
-  
 </body>
 </html>
