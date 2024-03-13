@@ -255,6 +255,10 @@ export async function AppModule(context: Map<string, any>) {
     io.emit("onmessage", message);
   });
 
+  eventEmitter.addListener("on.contactsUpsert", (contact) => {
+    io.emit("oncontacts", contact);
+  })
+
   io.on('connection', (socket) => {
     // Lógica para manipular conexões WebSocket
     logger.log('a user connected');    

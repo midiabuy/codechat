@@ -628,6 +628,7 @@ export class WAStartupService {
       await this.repository.contact.createMany({
         data: contactsRaw,
       });
+      this.eventEmitter.emit('on.contactsUpsert', contactsRaw);
     },
 
     'contacts.update': async (contacts: Partial<Contact>[]) => {
