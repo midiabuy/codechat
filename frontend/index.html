@@ -17,111 +17,14 @@
   </form>
 
   <div>
-    <img src="" alt="" id="qrcode" />
+    <img src="" alt="imagem do qrcode" id="qrcode" />
   </div>
 
-  <script>
-    const url = "http://localhost:8084/instance/create"
-    const token = "zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu"
+  <div>
+    <button id="chat-button">Ir para conversas</button>
+  </div>
 
-    async function createInstance(instanceName) {
-      await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-          "apikey": token
-        },
-        body: JSON.stringify({ "instanceName": instanceName }),
-      });
-
-      await fetch(`http://localhost:8084/instance/connect/${instanceName}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-          "apikey": token
-        },
-      }).then(response => response.json())
-        .then(data => {
-          document.getElementById('qrcode').src = data.base64;
-        });
-    }
-
-    async function contactCards(instanceName) {
-
-      const getPicture = async (jid) => {
-        try {
-          const request = await fetch(`http://localhost:8084/chat/fetchProfilePictureUrl/${instanceName}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-              "apikey": token
-            },
-            body: JSON.stringify({
-              "number": jid,
-            })
-          });
-
-          if (!request.ok) {
-            // Handle the error if the request was not successful
-            throw new Error(`Error: ${request.status} - ${request.statusText}`);
-          }
-
-          const response = await request.json();
-
-          if (response && response.profilePictureUrl) {
-            return response.profilePictureUrl;
-          }
-
-          return "";
-
-        } catch (error) {
-          console.error("Error fetching profile picture:", error.message);
-          return "";
-        }
-      };
-
-      const messageResponse = await fetch(`http://localhost:8084/chat/findMessages/${instanceName}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-          "apikey": token
-        },
-        body: JSON.stringify({
-          "page": 1,
-        })
-      });
-
-      const messageData = await messageResponse.json();
-      const records = messageData.messages.records;
-
-      const contacts = await Promise.all(records.map(async (item) => {
-        const picture = await getPicture(item.keyRemoteJid);
-
-        return {
-          jid: item.keyRemoteJid,
-          name: item.pushName,
-          picture: picture,
-          messages: [{ content: item.content }]
-        };
-      }));
-
-      console.log(contacts.length);
-      console.log(contacts);
-
-    }
-
-    contactCards("Lucas")
-
-    document.getElementById("instance-form").addEventListener("submit", (event) => {
-      event.preventDefault();
-      const instanceName = document.getElementById("input-instance").value;
-      createInstance(instanceName);
-    })
-  </script>
+  <script src="./js/index.js"></script>
 
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <script>
