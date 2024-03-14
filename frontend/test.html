@@ -9,6 +9,44 @@
 
 <body>
   <h1>teste</h1>
+
+
+  <script>
+    const token = "zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu"
+
+    async function getContacts(instanceName) {
+      const chatsResponse = await fetch(`http://localhost:8084/chat/findChats/${instanceName}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": `Bearer ${token}`,
+          "apikey": token
+        }
+      });
+      const chatsData = await chatsResponse.json();
+      const fiveParams = chatsData.slice(0, 5);
+      console.log(fiveParams);
+
+      for (let i = 0; i < fiveParams.length; i++) {
+        const contactResponse = await fetch(`http://localhost:8084/chat/findContacts/${instanceName}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${token}`,
+            "apikey": token
+          },
+          body: JSON.stringify({
+            "where": {
+              "remoteJid": fiveParams[i].remoteJid
+            }
+          })
+        });
+        const contactData = await contactResponse.json();
+        console.log(contactData);
+      }
+    }
+    getContacts('Lucas')
+  </script>
 </body>
 
 </html>

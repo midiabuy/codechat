@@ -68,7 +68,7 @@ async function contactCards(instanceName) {
     return contact;
   }));
 
-  const fiveContacts = contacts.slice(0, 6);
+  const fiveContacts = contacts.slice(0, 5);
   console.log(fiveContacts);
 
   displayContacts(fiveContacts);
@@ -86,6 +86,9 @@ function displayContacts(contacts) {
     image.src = contact.picture;
     image.alt = contact.name;
 
+    const contactName = document.createElement('h2');
+    contactName.textContent = contact.name;
+
     const name = document.createElement('p');
     name.textContent = contact.name;
 
@@ -93,11 +96,12 @@ function displayContacts(contacts) {
     lastMessage.textContent = contact.lastMessage;
 
     card.appendChild(image);
+    card.appendChild(contactName);
     card.appendChild(name);
     card.appendChild(lastMessage);
 
     contactsContainer.appendChild(card);
-  });
+});
 }
 
 contactCards("Lucas");
