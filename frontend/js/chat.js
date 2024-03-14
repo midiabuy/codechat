@@ -46,18 +46,30 @@ async function contactCards(instanceName) {
 
   const messageData = await messageResponse.json();
   const records = messageData.messages.records;
+  console.log(records); 
 
   const contactsMap = new Map();
   records.forEach((item) => {
     if (!contactsMap.has(item.keyRemoteJid)) {
       contactsMap.set(item.keyRemoteJid, {
         jid: item.keyRemoteJid,
-        name: item.pushName,
+        name: null,
         picture: "",
-        messages: [item.content]
+        messages: [
+          {
+            name: item.pushName,
+            content: item.content,
+          }
+        ]
       });
     } else {
-      contactsMap.get(item.keyRemoteJid).messages.push(item.content);
+      contactsMap.get(item.keyRemoteJid).messages.push({
+        name: item.pushName,
+        content: item.content,
+      });
+      if (!item.keyFromMe && contactsMap.get(item.keyRemoteJid).name === null) {
+        contactsMap.get(item.keyRemoteJid).name = item.pushName;
+      }
     }
   });
 
@@ -90,10 +102,10 @@ function displayContacts(contacts) {
     contactName.textContent = contact.name;
 
     const name = document.createElement('p');
-    name.textContent = contact.name;
+    name.textContent = contact.lastMessage.name;
 
     const lastMessage = document.createElement('p');
-    lastMessage.textContent = contact.lastMessage;
+    lastMessage.textContent = contact.lastMessage.content;
 
     card.appendChild(image);
     card.appendChild(contactName);
