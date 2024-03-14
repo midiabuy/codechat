@@ -1,4 +1,5 @@
 const token = "zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu";
+
 async function contactCards(instanceName) {
   const getPicture = async (jid) => {
     try {
@@ -57,7 +58,17 @@ async function contactCards(instanceName) {
       });
     }
 
-    const messageContent = typeof item.content === 'object' ? item.content.text : item.content;
+    let messageContent = "";
+
+    if (typeof item.content === 'object') {
+      if (item.content.url) {
+        messageContent = item.content.url;
+      } else if (item.content.text) {
+        messageContent = item.content.text;
+      }
+    } else if (typeof item.content === 'string') {
+      messageContent = item.content;
+    }
 
     contactsMap.get(item.keyRemoteJid).messages.push({
       name: item.pushName,
@@ -81,6 +92,8 @@ async function contactCards(instanceName) {
 
   displayContacts(fiveContacts);
 }
+
+
 function displayContacts(contacts) {
   const contactsContainer = document.getElementById('contacts-container');
   contactsContainer.innerHTML = ''; // Limpa o conteúdo anterior
