@@ -1,5 +1,4 @@
 const token = "zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu";
-
 async function contactCards(instanceName) {
   const getPicture = async (jid) => {
     try {
@@ -46,7 +45,6 @@ async function contactCards(instanceName) {
 
   const messageData = await messageResponse.json();
   const records = messageData.messages.records;
-  console.log(records); 
 
   const contactsMap = new Map();
   records.forEach((item) => {
@@ -55,21 +53,19 @@ async function contactCards(instanceName) {
         jid: item.keyRemoteJid,
         name: null,
         picture: "",
-        messages: [
-          {
-            name: item.pushName,
-            content: item.content,
-          }
-        ]
+        messages: []
       });
-    } else {
-      contactsMap.get(item.keyRemoteJid).messages.push({
-        name: item.pushName,
-        content: item.content,
-      });
-      if (!item.keyFromMe && contactsMap.get(item.keyRemoteJid).name === null) {
-        contactsMap.get(item.keyRemoteJid).name = item.pushName;
-      }
+    }
+
+    const messageContent = typeof item.content === 'object' ? item.content.text : item.content;
+
+    contactsMap.get(item.keyRemoteJid).messages.push({
+      name: item.pushName,
+      content: messageContent,
+    });
+
+    if (!item.keyFromMe && contactsMap.get(item.keyRemoteJid).name === null) {
+      contactsMap.get(item.keyRemoteJid).name = item.pushName;
     }
   });
 
@@ -85,7 +81,6 @@ async function contactCards(instanceName) {
 
   displayContacts(fiveContacts);
 }
-
 function displayContacts(contacts) {
   const contactsContainer = document.getElementById('contacts-container');
   contactsContainer.innerHTML = ''; // Limpa o conteúdo anterior
