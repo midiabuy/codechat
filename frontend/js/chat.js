@@ -10,7 +10,8 @@ const messageTypeLookup = {
   documentMessage: '📎 Arquivo',
   contactMessage: '👤 Contato',
   stickerMessage: '📃 Figurinha',
-  pollCreationMessage: '📊 Enquete'
+  pollCreationMessage: '📊 Enquete',
+  pollCreationMessageV3: '📊 Enquete',
 };
 
 async function contactCards(instanceName) {
@@ -93,6 +94,7 @@ async function contactCards(instanceName) {
     contactsMap.get(item.keyRemoteJid).messages.push({
       name: item.pushName,
       content: messageContent,
+      sentByClient: item.keyFromMe, // Adiciona a propriedade sentByClient
     });
 
     if (!item.keyFromMe && contactsMap.get(item.keyRemoteJid).name === null) {
@@ -133,11 +135,15 @@ function displayContacts(contacts) {
     const contactName = document.createElement('h2');
     contactName.textContent = contact.name;
 
-    const lastMessage = document.createElement('p');
-    lastMessage.textContent = contact.lastMessage.content;
+    const lastMessageContent = document.createElement('p');
+    if (contact.lastMessage.sentByClient) {
+      lastMessageContent.textContent = "Você: " + contact.lastMessage.content; // Adiciona "Você: " antes da mensagem
+    } else {
+      lastMessageContent.textContent = contact.lastMessage.content;
+    } 
 
     detailsContainer.appendChild(contactName);
-    detailsContainer.appendChild(lastMessage);
+    detailsContainer.appendChild(lastMessageContent);
 
     card.appendChild(image);
     card.appendChild(detailsContainer);
@@ -146,4 +152,4 @@ function displayContacts(contacts) {
   });
 }
 
-contactCards('Lucas');
+contactCards('Murilo');
