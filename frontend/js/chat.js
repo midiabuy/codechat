@@ -1,19 +1,35 @@
-const token = "zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu";
+const token = 'zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu';
+
+const messageTypeLookup = {
+  imageMessage: '📷 Imagem',
+  audioMessage: '🎶 Áudio',
+  videoMessage: '📹 Vídeo',
+  locationMessage: '📍 Localização',
+  liveLocationMessage: '📍 Localização em tempo real',
+  viewOnceMessageV2: '📷  Mídia temporaria', 
+  documentMessage: '📎 Arquivo',
+  contactMessage: '👤 Contato',
+  stickerMessage: '📃 Figurinha',
+  pollCreationMessage: '📊 Enquete'
+};
 
 async function contactCards(instanceName) {
   const getPicture = async (jid) => {
     try {
-      const request = await fetch(`http://localhost:8084/chat/fetchProfilePictureUrl/${instanceName}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-          "apikey": token
+      const request = await fetch(
+        `http://localhost:8084/chat/fetchProfilePictureUrl/${instanceName}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            apikey: token,
+          },
+          body: JSON.stringify({
+            number: jid,
+          }),
         },
-        body: JSON.stringify({
-          "number": jid,
-        })
-      });
+      );
 
       if (!request.ok) {
         throw new Error(`Error: ${request.status} - ${request.statusText}`);
@@ -25,24 +41,27 @@ async function contactCards(instanceName) {
         return response.profilePictureUrl;
       }
 
-      return "";
+      return '';
     } catch (error) {
-      console.error("Error fetching profile picture:", error.message);
-      return "";
+      console.error('Error fetching profile picture:', error.message);
+      return '';
     }
   };
 
-  const messageResponse = await fetch(`http://localhost:8084/chat/findMessages/${instanceName}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-      "apikey": token
+  const messageResponse = await fetch(
+    `http://localhost:8084/chat/findMessages/${instanceName}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        apikey: token,
+      },
+      body: JSON.stringify({
+        page: 1,
+      }),
     },
-    body: JSON.stringify({
-      "page": 1,
-    })
-  });
+  );
 
   const messageData = await messageResponse.json();
   const records = messageData.messages.records;
@@ -54,20 +73,18 @@ async function contactCards(instanceName) {
       contactsMap.set(item.keyRemoteJid, {
         jid: item.keyRemoteJid,
         name: null,
-        picture: "",
-        messages: []
+        picture: '',
+        messages: [],
       });
     }
 
-    let messageContent = "";
+    let messageContent = '';
 
     if (typeof item.content === 'object') {
-      if (item.content.url) {
-        messageContent = item.content.url;
-      } else if (item.content.text) {
-        messageContent = item.content.text;
-      } else if (item.content.jpegThumbnail) {
-        messageContent = item.content.jpegThumbnail;
+      if (item.content.text) {
+        messageContent = item.content.text
+      } else if (item.content) {
+        messageContent = messageTypeLookup[item.messageType]
       }
     } else if (typeof item.content === 'string') {
       messageContent = item.content;
@@ -83,12 +100,14 @@ async function contactCards(instanceName) {
     }
   });
 
-  const contacts = await Promise.all([...contactsMap.values()].map(async (contact) => {
-    const picture = await getPicture(contact.jid);
-    contact.picture = picture;
-    contact.lastMessage = contact.messages[0];
-    return contact;
-  }));
+  const contacts = await Promise.all(
+    [...contactsMap.values()].map(async (contact) => {
+      const picture = await getPicture(contact.jid);
+      contact.picture = picture;
+      contact.lastMessage = contact.messages[0];
+      return contact;
+    }),
+  );
 
   const fiveContacts = contacts.slice(0, 5);
   console.log(fiveContacts);
@@ -96,12 +115,11 @@ async function contactCards(instanceName) {
   displayContacts(fiveContacts);
 }
 
-
 function displayContacts(contacts) {
   const contactsContainer = document.getElementById('contacts-container');
   contactsContainer.innerHTML = ''; // Limpa o conteúdo anterior
 
-  contacts.forEach(contact => {
+  contacts.forEach((contact) => {
     const card = document.createElement('div');
     card.classList.add('contact-card');
 
@@ -124,7 +142,7 @@ function displayContacts(contacts) {
     card.appendChild(lastMessage);
 
     contactsContainer.appendChild(card);
-});
+  });
 }
 
-contactCards("Lucas");
+contactCards('Murilo');
