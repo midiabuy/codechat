@@ -127,22 +127,23 @@ function displayContacts(contacts) {
     image.src = contact.picture;
     image.alt = contact.name;
 
+    const detailsContainer = document.createElement('div');
+    detailsContainer.classList.add('contact-card-details');
+
     const contactName = document.createElement('h2');
     contactName.textContent = contact.name;
-
-    const name = document.createElement('p');
-    name.textContent = contact.lastMessage.name;
 
     const lastMessage = document.createElement('p');
     lastMessage.textContent = contact.lastMessage.content;
 
+    detailsContainer.appendChild(contactName);
+    detailsContainer.appendChild(lastMessage);
+
     card.appendChild(image);
-    card.appendChild(contactName);
-    card.appendChild(name);
-    card.appendChild(lastMessage);
+    card.appendChild(detailsContainer);
 
     contactsContainer.appendChild(card);
   });
 }
 
-contactCards('Murilo');
+contactCards('Lucas');
