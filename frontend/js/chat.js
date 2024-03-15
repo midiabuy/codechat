@@ -46,6 +46,7 @@ async function contactCards(instanceName) {
 
   const messageData = await messageResponse.json();
   const records = messageData.messages.records;
+  console.log(records);
 
   const contactsMap = new Map();
   records.forEach((item) => {
@@ -65,6 +66,8 @@ async function contactCards(instanceName) {
         messageContent = item.content.url;
       } else if (item.content.text) {
         messageContent = item.content.text;
+      } else if (item.content.jpegThumbnail) {
+        messageContent = item.content.jpegThumbnail;
       }
     } else if (typeof item.content === 'string') {
       messageContent = item.content;
@@ -125,7 +128,3 @@ function displayContacts(contacts) {
 }
 
 contactCards("Lucas");
-
-// ptt = audio
-// url = imagem
-// text = texto
