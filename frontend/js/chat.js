@@ -1,12 +1,14 @@
+// Definição do token de autenticação
 const token = 'zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu';
 
+// Mapeamento dos tipos de mensagem para emojis correspondentes
 const messageTypeLookup = {
   imageMessage: '📷 Imagem',
   audioMessage: '🎶 Áudio',
   videoMessage: '📹 Vídeo',
   locationMessage: '📍 Localização',
   liveLocationMessage: '📍 Localização em tempo real',
-  viewOnceMessageV2: '📷  Mídia temporaria', 
+  viewOnceMessageV2: '📷  Mídia temporaria',
   documentMessage: '📎 Arquivo',
   contactMessage: '👤 Contato',
   stickerMessage: '📃 Figurinha',
@@ -14,9 +16,17 @@ const messageTypeLookup = {
   pollCreationMessageV3: '📊 Enquete',
 };
 
+// Função assíncrona para buscar informações dos contatos
 async function contactCards(instanceName) {
-  const getPicture = async (jid) => {
+  async function getPicture(jid) {
     try {
+      // Verifica se a imagem de perfil do contato está em cache
+      const cachedPicture = localStorage.getItem(`picture_${jid}`);
+      if (cachedPicture) {
+        return cachedPicture;
+      }
+
+      // Faz uma solicitação para obter a URL da imagem de perfil do servidor
       const request = await fetch(
         `http://localhost:8084/chat/fetchProfilePictureUrl/${instanceName}`,
         {
@@ -26,102 +36,113 @@ async function contactCards(instanceName) {
             Authorization: `Bearer ${token}`,
             apikey: token,
           },
-          body: JSON.stringify({
-            number: jid,
-          }),
+          body: JSON.stringify({ number: jid }), // Corpo da solicitação com o número de telefone do contato
         },
       );
 
+      // Verifica se a solicitação foi bem-sucedida
       if (!request.ok) {
         throw new Error(`Error: ${request.status} - ${request.statusText}`);
       }
 
+      // Extrai a URL da imagem de perfil da resposta da solicitação
       const response = await request.json();
 
+      // Salva a URL da imagem de perfil em cache
       if (response && response.profilePictureUrl) {
+        localStorage.setItem(`picture_${jid}`, response.profilePictureUrl);
         return response.profilePictureUrl;
       }
 
-      return '';
+      return ''; // Retorna uma string vazia se a imagem de perfil não estiver disponível
     } catch (error) {
-      console.error('Error fetching profile picture:', error.message);
-      return '';
+      console.error('Error fetching profile picture:', error.message); // Manipula erros
+      return ''; // Retorna uma string vazia em caso de erro
     }
-  };
-
-  const messageResponse = await fetch(
-    `http://localhost:8084/chat/findMessages/${instanceName}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        apikey: token,
+  }
+  try {
+    // Solicitação para obter as mensagens do servidor
+    const messageResponse = await fetch(
+      `http://localhost:8084/chat/findMessages/${instanceName}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          apikey: token,
+        },
+        body: JSON.stringify({ page: 1 }), // Corpo da solicitação com o número da página
       },
-      body: JSON.stringify({
-        page: 1,
-      }),
-    },
-  );
+    );
 
-  const messageData = await messageResponse.json();
-  const records = messageData.messages.records;
-  console.log(records);
-
-  const contactsMap = new Map();
-  records.forEach((item) => {
-    if (!contactsMap.has(item.keyRemoteJid)) {
-      contactsMap.set(item.keyRemoteJid, {
-        jid: item.keyRemoteJid,
-        name: null,
-        picture: '',
-        messages: [],
-      });
+    // Verifica se a solicitação foi bem-sucedida
+    if (!messageResponse.ok) {
+      throw new Error(`Error: ${messageResponse.status} - ${messageResponse.statusText}`);
     }
 
-    let messageContent = '';
+    // Extrai os dados da resposta da solicitação
+    const messageData = await messageResponse.json();
+    const records = messageData.messages.records;
 
-    if (typeof item.content === 'object') {
-      if (item.content.text) {
-        messageContent = item.content.text
-      } else if (item.content) {
-        messageContent = messageTypeLookup[item.messageType]
+    // Mapa para armazenar os contatos
+    const contactsMap = new Map();
+
+    // Itera sobre os registros de mensagens para agrupar as informações dos contatos
+    for (const item of records) {
+      if (!contactsMap.has(item.keyRemoteJid)) {
+        contactsMap.set(item.keyRemoteJid, {
+          jid: item.keyRemoteJid,
+          name: null,
+          picture: '',
+          messages: [],
+        });
       }
-    } else if (typeof item.content === 'string') {
-      messageContent = item.content;
+
+      // Determina o conteúdo da mensagem
+      let messageContent = '';
+      if (typeof item.content === 'object' && item.content.text) {
+        messageContent = item.content.text;
+      } else {
+        messageContent = messageTypeLookup[item.messageType] || item.content || '';
+      }
+
+      // Adiciona a mensagem ao contato correspondente
+      contactsMap.get(item.keyRemoteJid).messages.push({
+        name: item.pushName,
+        content: messageContent,
+        sentByClient: item.keyFromMe,
+      });
+
+      // Se a mensagem não foi enviada pelo cliente e o nome do contato ainda não foi definido, define o nome
+      if (!item.keyFromMe && !contactsMap.get(item.keyRemoteJid).name) {
+        contactsMap.get(item.keyRemoteJid).name = item.pushName;
+      }
     }
 
-    contactsMap.get(item.keyRemoteJid).messages.push({
-      name: item.pushName,
-      content: messageContent,
-      sentByClient: item.keyFromMe, // Adiciona a propriedade sentByClient
-    });
-
-    if (!item.keyFromMe && contactsMap.get(item.keyRemoteJid).name === null) {
-      contactsMap.get(item.keyRemoteJid).name = item.pushName;
-    }
-  });
-
-  const contacts = await Promise.all(
-    [...contactsMap.values()].map(async (contact) => {
+    // Converte o mapa de contatos em uma matriz e busca a imagem de perfil para cada contato
+    const contacts = [];
+    for (const contact of contactsMap.values()) {
       const picture = await getPicture(contact.jid);
       contact.picture = picture;
       contact.lastMessage = contact.messages[0];
-      return contact;
-    }),
-  );
+      contacts.push(contact);
+    }
 
-  const fiveContacts = contacts.slice(0, 5);
-  console.log(fiveContacts);
-
-  displayContacts(fiveContacts);
+    // Seleciona os cinco primeiros contatos para exibição
+    const fiveContacts = contacts.slice(0, 5);
+    displayContacts(fiveContacts); // Exibe os contatos na interface
+  } catch (error) {
+    console.error('Error:', error.message); // Manipula erros
+  }
 }
 
+// Função para exibir os contatos na interface do usuário
 function displayContacts(contacts) {
   const contactsContainer = document.getElementById('contacts-container');
   contactsContainer.innerHTML = ''; // Limpa o conteúdo anterior
 
-  contacts.forEach((contact) => {
+  // Itera sobre os contatos para criar e adicionar os elementos HTML correspondentes
+  for (const contact of contacts) {
     const card = document.createElement('div');
     card.classList.add('contact-card');
 
@@ -136,11 +157,9 @@ function displayContacts(contacts) {
     contactName.textContent = contact.name;
 
     const lastMessageContent = document.createElement('p');
-    if (contact.lastMessage.sentByClient) {
-      lastMessageContent.textContent = "Você: " + contact.lastMessage.content; // Adiciona "Você: " antes da mensagem
-    } else {
-      lastMessageContent.textContent = contact.lastMessage.content;
-    } 
+    lastMessageContent.textContent = contact.lastMessage.sentByClient
+      ? `Você: ${contact.lastMessage.content}`
+      : contact.lastMessage.content;
 
     detailsContainer.appendChild(contactName);
     detailsContainer.appendChild(lastMessageContent);
@@ -149,7 +168,8 @@ function displayContacts(contacts) {
     card.appendChild(detailsContainer);
 
     contactsContainer.appendChild(card);
-  });
+  }
 }
 
+// Inicia o processo de busca e exibição de contatos
 contactCards('Murilo');
