@@ -3,17 +3,19 @@ const token = 'zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu';
 
 // Mapeamento dos tipos de mensagem para emojis correspondentes
 const messageTypeLookup = {
-  imageMessage: '📷 Imagem',
-  audioMessage: '🎶 Áudio',
-  videoMessage: '📹 Vídeo',
-  locationMessage: '📍 Localização',
-  liveLocationMessage: '📍 Localização em tempo real',
-  viewOnceMessageV2: '📷  Mídia temporaria',
-  documentMessage: '📎 Arquivo',
-  contactMessage: '👤 Contato',
-  stickerMessage: '📃 Figurinha',
-  pollCreationMessage: '📊 Enquete',
-  pollCreationMessageV3: '📊 Enquete',
+  imageMessage: '📷 Imagem', // Android, IOS, WEB e Desktop - No IOS retorna imageMessage mesmo temporaria
+  audioMessage: '🎶 Áudio',  // Android, IOS, WEB e Desktop - No IOS retorna audioMessage mesmo temporaria - Desktop nao tem Audio Temporario
+  videoMessage: '📹 Vídeo', // Android, IOS, WEB e Desktop - No IOS retorna videoMessage mesmo temporaria
+  locationMessage: '📍 Localização', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
+  liveLocationMessage: '📍 Localização em tempo real', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
+  viewOnceMessageV2: '📷  Mídia temporaria', // Foto e Video Temporario - ANDROID e Desktop
+  viewOnceMessage: '📷  Mídia temporaria', // Foto e Video temporario - WEB
+  viewOnceMessageV2Extension: '🎶 Audio Temporario', // Audio temporario - ANDROID e WEB
+  documentMessage: '📎 Arquivo', // Android, IOS, WEB e Desktop
+  contactMessage: '👤 Contato', // Android, IOS, WEB e Desktop
+  stickerMessage: '📃 Figurinha', // Android, IOS, WEB e Desktop
+  pollCreationMessage: '📊 Enquete', // Web e Desktop
+  pollCreationMessageV3: '📊 Enquete', // Android e IOS
 };
 
 // Função assíncrona para buscar informações dos contatos
@@ -83,6 +85,7 @@ async function contactCards(instanceName) {
     // Extrai os dados da resposta da solicitação
     const messageData = await messageResponse.json();
     const records = messageData.messages.records;
+    console.log(records);
 
     // Mapa para armazenar os contatos
     const contactsMap = new Map();
