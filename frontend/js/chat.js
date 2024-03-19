@@ -3,19 +3,19 @@ const token = 'zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu';
 
 // Mapeamento dos tipos de mensagem para emojis correspondentes
 const messageTypeLookup = {
-  imageMessage: '📷 Imagem', // Android, IOS, WEB e Desktop - No IOS retorna imageMessage mesmo temporaria
-  audioMessage: '🎶 Áudio',  // Android, IOS, WEB e Desktop - No IOS retorna audioMessage mesmo temporaria - Desktop nao tem Audio Temporario
-  videoMessage: '📹 Vídeo', // Android, IOS, WEB e Desktop - No IOS retorna videoMessage mesmo temporaria
-  locationMessage: '📍 Localização', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
-  liveLocationMessage: '📍 Localização em tempo real', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
-  viewOnceMessageV2: '📷  Mídia temporaria', // Foto e Video Temporario - ANDROID e Desktop
-  viewOnceMessage: '📷  Mídia temporaria', // Foto e Video temporario - WEB
-  viewOnceMessageV2Extension: '🎶 Audio Temporario', // Audio temporario - ANDROID e WEB
-  documentMessage: '📎 Arquivo', // Android, IOS, WEB e Desktop
-  contactMessage: '👤 Contato', // Android, IOS, WEB e Desktop
-  stickerMessage: '📃 Figurinha', // Android, IOS, WEB e Desktop
-  pollCreationMessage: '📊 Enquete', // Web e Desktop
-  pollCreationMessageV3: '📊 Enquete', // Android e IOS
+  imageMessage: '📷 Imagem',
+  audioMessage: '🎶 Áudio',
+  videoMessage: '📹 Vídeo',
+  locationMessage: '📍 Localização',
+  liveLocationMessage: '📍 Localização em tempo real',
+  viewOnceMessageV2: '📷 Mídia temporária',
+  viewOnceMessage: '📷 Mídia temporária',
+  viewOnceMessageV2Extension: '🎶 Áudio temporário',
+  documentMessage: '📎 Arquivo',
+  contactMessage: '👤 Contato',
+  stickerMessage: '📃 Figurinha',
+  pollCreationMessage: '📊 Enquete',
+  pollCreationMessageV3: '📊 Enquete',
 };
 
 // Função assíncrona para buscar informações dos contatos
@@ -62,6 +62,7 @@ async function contactCards(instanceName) {
       return ''; // Retorna uma string vazia em caso de erro
     }
   }
+
   try {
     // Solicitação para obter as mensagens do servidor
     const messageResponse = await fetch(
@@ -133,6 +134,7 @@ async function contactCards(instanceName) {
 
     // Seleciona os cinco primeiros contatos para exibição
     const fiveContacts = contacts.slice(0, 5);
+    console.log(fiveContacts);
     displayContacts(fiveContacts); // Exibe os contatos na interface
   } catch (error) {
     console.error('Error:', error.message); // Manipula erros
@@ -175,4 +177,28 @@ function displayContacts(contacts) {
 }
 
 // Inicia o processo de busca e exibição de contatos
-contactCards('Murilo');
+async function initializeContactCards(instanceName) {
+  let retryCount = 0;
+  const maxRetries = 3;
+  const retryInterval = 1000; // 1 segundo
+
+  async function tryContactCards() {
+    try {
+      await contactCards(instanceName);
+    } catch (error) {
+      console.error('Error contacting server:', error.message);
+      if (retryCount < maxRetries) {
+        retryCount++;
+        console.log(`Retrying in ${retryInterval / 1000} seconds...`);
+        setTimeout(tryContactCards, retryInterval);
+      } else {
+        console.error('Max retry limit reached. Could not fetch contact cards.');
+      }
+    }
+  }
+
+  await tryContactCards();
+}
+
+// Chama a função para iniciar o processo de busca e exibição de contatos
+initializeContactCards('Murilo');
