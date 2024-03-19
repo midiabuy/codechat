@@ -3,19 +3,19 @@ const token = 'zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu';
 
 // Mapeamento dos tipos de mensagem para emojis correspondentes
 const messageTypeLookup = {
-  imageMessage: '📷 Imagem',
-  audioMessage: '🎶 Áudio',
-  videoMessage: '📹 Vídeo',
-  locationMessage: '📍 Localização',
-  liveLocationMessage: '📍 Localização em tempo real',
-  viewOnceMessageV2: '📷 Mídia temporária',
-  viewOnceMessage: '📷 Mídia temporária',
-  viewOnceMessageV2Extension: '🎶 Áudio temporário',
-  documentMessage: '📎 Arquivo',
-  contactMessage: '👤 Contato',
-  stickerMessage: '📃 Figurinha',
-  pollCreationMessage: '📊 Enquete',
-  pollCreationMessageV3: '📊 Enquete',
+  imageMessage: '📷 Imagem', // Android, IOS, WEB e Desktop - No IOS retorna imageMessage mesmo temporaria
+  audioMessage: '🎶 Áudio', // Android, IOS, WEB e Desktop - No IOS retorna audioMessage mesmo temporaria - Desktop nao tem Audio Temporario
+  videoMessage: '📹 Vídeo', // Android, IOS, WEB e Desktop - No IOS retorna videoMessage mesmo temporaria
+  locationMessage: '📍 Localização', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
+  liveLocationMessage: '📍 Localização em tempo real', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
+  viewOnceMessageV2: '📷  Mídia temporaria', // Foto e Video Temporario - ANDROID e Desktop
+  viewOnceMessage: '📷  Mídia temporaria', // Foto e Video temporario - WEB
+  viewOnceMessageV2Extension: '🎶 Audio Temporario', // Audio temporario - ANDROID e WEB
+  documentMessage: '📎 Arquivo', // Android, IOS, WEB e Desktop
+  contactMessage: '👤 Contato', // Android, IOS, WEB e Desktop
+  stickerMessage: '📃 Figurinha', // Android, IOS, WEB e Desktop
+  pollCreationMessage: '📊 Enquete', // Web e Desktop
+  pollCreationMessageV3: '📊 Enquete', // Android e IOS
 };
 
 // Função assíncrona para buscar informações dos contatos
@@ -63,6 +63,23 @@ async function contactCards(instanceName) {
     }
   }
 
+  async function getMediaMessage(keyId) {
+    const midiaResponse = await fetch(
+      `http://localhost:8084/chat/retrieverMediaMessage/${instanceName}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          apikey: token,
+        },
+        body: JSON.stringify({
+          keyId: keyId,
+        }),
+      },
+    );
+  }
+
   try {
     // Solicitação para obter as mensagens do servidor
     const messageResponse = await fetch(
@@ -86,6 +103,14 @@ async function contactCards(instanceName) {
     // Extrai os dados da resposta da solicitação
     const messageData = await messageResponse.json();
     const records = messageData.messages.records;
+
+    for (const index of records) {
+      console.log(index.keyId)
+    }
+
+    const keyId = records.keyId;
+    console.log(keyId);
+
     console.log(records);
 
     // Mapa para armazenar os contatos
@@ -169,6 +194,9 @@ function displayContacts(contacts) {
     detailsContainer.appendChild(contactName);
     detailsContainer.appendChild(lastMessageContent);
 
+    // Adiciona um evento de clique ao card de contato
+    card.addEventListener('click', () => handleContactClick(contact));
+
     card.appendChild(image);
     card.appendChild(detailsContainer);
 
@@ -176,29 +204,42 @@ function displayContacts(contacts) {
   }
 }
 
-// Inicia o processo de busca e exibição de contatos
-async function initializeContactCards(instanceName) {
-  let retryCount = 0;
-  const maxRetries = 3;
-  const retryInterval = 1000; // 1 segundo
+// Função para lidar com o clique em um card de contato
+function handleContactClick(contact) {
+  console.log('Contact clicked:', contact);
 
-  async function tryContactCards() {
-    try {
-      await contactCards(instanceName);
-    } catch (error) {
-      console.error('Error contacting server:', error.message);
-      if (retryCount < maxRetries) {
-        retryCount++;
-        console.log(`Retrying in ${retryInterval / 1000} seconds...`);
-        setTimeout(tryContactCards, retryInterval);
-      } else {
-        console.error('Max retry limit reached. Could not fetch contact cards.');
-      }
-    }
-  }
-
-  await tryContactCards();
+  // Lógica de renderização da conversa do contato à direita da barra lateral
+  renderConversation(contact);
 }
 
-// Chama a função para iniciar o processo de busca e exibição de contatos
-initializeContactCards('Murilo');
+// Função para renderizar a conversa do contato à direita da barra lateral
+function renderConversation(contact) {
+  const conversationContainer = document.getElementById('conversation-container');
+  conversationContainer.innerHTML = ''; // Limpa o conteúdo anterior
+
+  // Adiciona um cabeçalho com o nome do contato
+  const contactNameHeader = document.createElement('h3');
+  contactNameHeader.textContent = contact.name;
+  conversationContainer.appendChild(contactNameHeader);
+
+  // Itera sobre as mensagens do contato para renderizá-las
+  for (const message of contact.messages) {
+    const messageContainer = document.createElement('div');
+    messageContainer.classList.add('message-container');
+
+    const messageContent = document.createElement('p');
+    messageContent.textContent = message.content;
+
+    // Adiciona uma classe para mensagens enviadas pelo usuário atual
+    if (message.sentByClient) {
+      messageContainer.classList.add('sent-message');
+      messageContent.textContent = `Você: ${message.content}`; // Adiciona o prefixo "Você:" para mensagens enviadas pelo usuário atual
+    }
+
+    messageContainer.appendChild(messageContent);
+    conversationContainer.appendChild(messageContainer);
+  }
+}
+
+// Inicia o processo de busca e exibição de contatos
+contactCards('Murilo');

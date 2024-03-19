@@ -25,60 +25,9 @@
   </div>
 
   <script src="./js/index.js"></script>
-
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <script>
-    const socket = io("ws://127.0.0.1:8084", {
-      transports: ["websocket"],
-      auth: {
-        serverOffset: 0,
-      },
-    });
-    // let socket = new WebSocket("ws://127.0.0.1:3001");
-    console.log("Attempting Connection...");
-
-    socket.on("connect", () => {
-      console.log("connected");
-    });
-
-    // socket.on("onmessage", (message, offset) => {
-    //   console.log(message);
-    // });
-
-    socket.on("oncontacts", (contact) => {
-      console.log(contact);
-    });
-
-    socket.on("connection_error", (e) => {
-      console.log(e);
-    });
-
-    socket.on("disconnect", (e) => {
-      console.log(e);
-      socket.connect();
-    });
-
-    // socket.onopen = () => {
-    //     console.log("Successfully Connected");
-    // };
-
-    // socket.onmessage = event => {
-    //     console.log("Received message:", event.data);
-    //     displayMessage(event.data);
-    // };
-
-    // socket.onclose = event => {
-    //     console.log("Socket Closed Connection: ", event);
-    //     socket.send("Client Closed!");
-    // };
-
-    // socket.onerror = error => {
-    //     console.log("Socket Error: ", error);
-    // };
-
-    // function displayMessage(message) {
-    //     console.log(message);
-    // };
+    // Seu código JavaScript adicional aqui
   </script>
 </body>
 
