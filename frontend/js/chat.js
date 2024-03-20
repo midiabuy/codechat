@@ -135,6 +135,8 @@ async function contactCards(instanceName) {
         messageContent = await getMediaMessage(item.keyId);
       } else if (item.messageType === 'videoMessage') {
         messageContent = await getMediaMessage(item.keyId);
+      } else if (item.messageType === 'locationMessage') {
+        messageContent = item.content.jpegThumbnail;
       }
 
       // Adiciona a mensagem ao contato correspondente
@@ -241,14 +243,20 @@ async function renderConversation(contact) {
       messageContainer.appendChild(messageImage);
 
     } else if (message.messageType == 'videoMessage') {
-
       const videoMessage = document.createElement('video');
+      videoMessage.controls = true;
       let fileReader = new FileReader();
       fileReader.onload = function () {
         videoMessage.src = fileReader.result;
       }
       fileReader.readAsDataURL(message.content);
       messageContainer.appendChild(videoMessage);
+
+    } else if (message.messageType == 'locationMessage') {
+
+      const locationMessage = new Image();
+      locationMessage.src = `data:image/jpeg;base64,${message.content}`;
+      messageContainer.appendChild(locationMessage);
 
     } else {
       const messageContent = document.createElement('p');
