@@ -105,9 +105,9 @@ async function contactCards(instanceName) {
         },
       );
 
-      const mediaData = mediaResponse.blob();
-      console.log(mediaData);
-      return mediaData;
+      const mediaBuffer = await mediaResponse.arrayBuffer();
+      const mediaBlob = new Blob([mediaBuffer], { type: mediaResponse.headers.get('content-type') });
+      return mediaBlob;
     }
 
 
@@ -129,7 +129,11 @@ async function contactCards(instanceName) {
       let messageContent = '';
       if (typeof item.content === 'object' && item.content.text && item.messageType === 'extendedTextMessage') {
         messageContent = item.content.text;
+      } else if (item.content === 'string') {
+        messageContent = item.content;
       } else if (item.messageType === 'imageMessage') {
+        messageContent = await getMediaMessage(item.keyId);
+      } else if (item.messageType === 'videoMessage') {
         messageContent = await getMediaMessage(item.keyId);
       }
 
@@ -138,6 +142,7 @@ async function contactCards(instanceName) {
         name: item.pushName,
         content: messageContent,
         sentByClient: item.keyFromMe,
+        messageType: item.messageType,
       });
 
       // Se a mensagem não foi enviada pelo cliente e o nome do contato ainda não foi definido, define o nome
@@ -225,22 +230,38 @@ async function renderConversation(contact) {
     const messageContainer = document.createElement('div');
     messageContainer.classList.add('message-container');
 
-    if (message.messageType === 'imageMessage') {
-      const messageImage = document.createElement('img');
-      messageImage.src = URL.createObjectURL(await getMediaMessage(message.keyId));
+    if (message.messageType == 'imageMessage') {
+
+      const messageImage = new Image(); // document.createElement('img');
+      let fileReader = new FileReader();
+      fileReader.onload = function () {
+        messageImage.src = fileReader.result;
+      }
+      fileReader.readAsDataURL(message.content);
       messageContainer.appendChild(messageImage);
+
+    } else if (message.messageType == 'videoMessage') {
+
+      const videoMessage = document.createElement('video');
+      let fileReader = new FileReader();
+      fileReader.onload = function () {
+        videoMessage.src = fileReader.result;
+      }
+      fileReader.readAsDataURL(message.content);
+      messageContainer.appendChild(videoMessage);
+
+    } else {
+      const messageContent = document.createElement('p');
+      messageContent.textContent = message.content;
+      messageContainer.appendChild(messageContent);
+
+      // Adiciona uma classe para mensagens enviadas pelo usuário atual
+      if (message.sentByClient) {
+        messageContainer.classList.add('sent-message');
+        messageContent.textContent = `Você: ${message.content}`; // Adiciona o prefixo "Você:" para mensagens enviadas pelo usuário atual
+      }
     }
 
-    const messageContent = document.createElement('p');
-    messageContent.textContent = message.content;
-
-    // Adiciona uma classe para mensagens enviadas pelo usuário atual
-    if (message.sentByClient) {
-      messageContainer.classList.add('sent-message');
-      messageContent.textContent = `Você: ${message.content}`; // Adiciona o prefixo "Você:" para mensagens enviadas pelo usuário atual
-    }
-
-    messageContainer.appendChild(messageContent);
     conversationContainer.appendChild(messageContainer);
   }
 }
