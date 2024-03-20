@@ -253,10 +253,17 @@ async function renderConversation(contact) {
       messageContainer.appendChild(videoMessage);
 
     } else if (message.messageType == 'locationMessage') {
+      const locationDiv = document.createElement('div');
 
       const locationMessage = new Image();
       locationMessage.src = `data:image/jpeg;base64,${message.content}`;
-      messageContainer.appendChild(locationMessage);
+      locationDiv.appendChild(locationMessage);
+
+      const locationLink = document.createElement('a')
+      locationLink.href = `https://maps.google.com/maps?q=${message.degreesLatitude}${message.degreesLongitude}&z=17&hl=pt-BR` 
+      locationDiv.appendChild(locationLink);
+
+      messageContainer.appendChild(locationDiv);
 
     } else {
       const messageContent = document.createElement('p');
@@ -275,4 +282,4 @@ async function renderConversation(contact) {
 }
 
 // Inicia o processo de busca e exibição de contatos
-contactCards('Lucas');
+contactCards('Murilo');
