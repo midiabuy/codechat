@@ -63,23 +63,6 @@ async function contactCards(instanceName) {
     }
   }
 
-  async function getMediaMessage(keyId) {
-    const midiaResponse = await fetch(
-      `http://localhost:8084/chat/retrieverMediaMessage/${instanceName}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          apikey: token,
-        },
-        body: JSON.stringify({
-          keyId: keyId,
-        }),
-      },
-    );
-  }
-
   try {
     // Solicitação para obter as mensagens do servidor
     const messageResponse = await fetch(
@@ -104,14 +87,29 @@ async function contactCards(instanceName) {
     const messageData = await messageResponse.json();
     const records = messageData.messages.records;
 
-    for (const index of records) {
-      console.log(index.keyId)
+    console.log(records);
+
+    async function getMediaMessage(keyId) {
+      const mediaResponse = await fetch(
+        `http://localhost:8084/chat/retrieverMediaMessage/${instanceName}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            apikey: token,
+          },
+          body: JSON.stringify({
+            keyId: keyId,
+          }),
+        },
+      );
+
+      const mediaData = mediaResponse.blob();
+      console.log(mediaData);
+      return mediaData;
     }
 
-    const keyId = records.keyId;
-    console.log(keyId);
-
-    console.log(records);
 
     // Mapa para armazenar os contatos
     const contactsMap = new Map();
@@ -129,10 +127,10 @@ async function contactCards(instanceName) {
 
       // Determina o conteúdo da mensagem
       let messageContent = '';
-      if (typeof item.content === 'object' && item.content.text) {
+      if (typeof item.content === 'object' && item.content.text && item.messageType === 'extendedTextMessage') {
         messageContent = item.content.text;
-      } else {
-        messageContent = messageTypeLookup[item.messageType] || item.content || '';
+      } else if (item.messageType === 'imageMessage') {
+        messageContent = await getMediaMessage(item.keyId);
       }
 
       // Adiciona a mensagem ao contato correspondente
@@ -213,7 +211,7 @@ function handleContactClick(contact) {
 }
 
 // Função para renderizar a conversa do contato à direita da barra lateral
-function renderConversation(contact) {
+async function renderConversation(contact) {
   const conversationContainer = document.getElementById('conversation-container');
   conversationContainer.innerHTML = ''; // Limpa o conteúdo anterior
 
@@ -226,6 +224,12 @@ function renderConversation(contact) {
   for (const message of contact.messages) {
     const messageContainer = document.createElement('div');
     messageContainer.classList.add('message-container');
+
+    if (message.messageType === 'imageMessage') {
+      const messageImage = document.createElement('img');
+      messageImage.src = URL.createObjectURL(await getMediaMessage(message.keyId));
+      messageContainer.appendChild(messageImage);
+    }
 
     const messageContent = document.createElement('p');
     messageContent.textContent = message.content;
@@ -242,4 +246,4 @@ function renderConversation(contact) {
 }
 
 // Inicia o processo de busca e exibição de contatos
-contactCards('Murilo');
+contactCards('Lucas');
