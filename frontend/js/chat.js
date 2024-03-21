@@ -127,18 +127,17 @@ async function contactCards(instanceName) {
 
       // Determina o conteúdo da mensagem
       let messageContent = '';
-      if (typeof item.content === 'object' && item.content.text && item.messageType === 'extendedTextMessage') {
-        messageContent = item.content.text;
-      } else if (item.content === 'string') {
-        messageContent = item.content;
-      } else if (item.messageType === 'imageMessage') {
+      if (item.messageType === 'extendedTextMessage' || item.messageType === 'conversation') {
+        messageContent = typeof item.content === 'object' ? item.content.text : item.content;
+      } else if (item.messageType === 'imageMessage' || item.messageType === 'viewOnceMessageV2' || item.messageType === 'viewOnceMessage') {
         messageContent = await getMediaMessage(item.keyId);
       } else if (item.messageType === 'videoMessage') {
         messageContent = await getMediaMessage(item.keyId);
-      } else if (item.messageType === 'locationMessage') {
-        messageContent = item.content.jpegThumbnail;
+      } else if (item.messageType === 'documentMessage') {
+        messageContent = await getMediaMessage(item.keyId);
+      } else if (item.messageType === 'audioMessage') {
+        messageContent = await getMediaMessage(item.keyId);
       }
-
       // Adiciona a mensagem ao contato correspondente
       contactsMap.get(item.keyRemoteJid).messages.push({
         name: item.pushName,
@@ -252,19 +251,26 @@ async function renderConversation(contact) {
       fileReader.readAsDataURL(message.content);
       messageContainer.appendChild(videoMessage);
 
-    } else if (message.messageType == 'locationMessage') {
-      const locationDiv = document.createElement('div');
+    } else if (message.messageType == 'documentMessage') {
+      const documentMessage = document.createElement('a');
+      let fileReader = new FileReader();
+      fileReader.onload = function () {
+        documentMessage.href = fileReader.result;
+        documentMessage.download = 'file';
+      }
+      fileReader.readAsDataURL(message.content);
+      documentMessage.textContent = '📎 Baixar arquivo';
+      messageContainer.appendChild(documentMessage);
 
-      const locationMessage = new Image();
-      locationMessage.src = `data:image/jpeg;base64,${message.content}`;
-      locationDiv.appendChild(locationMessage);
-
-      const locationLink = document.createElement('a')
-      locationLink.href = `https://maps.google.com/maps?q=${message.degreesLatitude}${message.degreesLongitude}&z=17&hl=pt-BR` 
-      locationDiv.appendChild(locationLink);
-
-      messageContainer.appendChild(locationDiv);
-
+    } else if (message.messageType == 'audioMessage') {
+      const audioMessage = document.createElement('audio');
+      audioMessage.controls = true;
+      let fileReader = new FileReader();
+      fileReader.onload = function () {
+        audioMessage.src = fileReader.result;
+      }
+      fileReader.readAsDataURL(message.content);
+      messageContainer.appendChild(audioMessage);
     } else {
       const messageContent = document.createElement('p');
       messageContent.textContent = message.content;
@@ -273,7 +279,7 @@ async function renderConversation(contact) {
       // Adiciona uma classe para mensagens enviadas pelo usuário atual
       if (message.sentByClient) {
         messageContainer.classList.add('sent-message');
-        messageContent.textContent = `Você: ${message.content}`; // Adiciona o prefixo "Você:" para mensagens enviadas pelo usuário atual
+        messageContent.textContent = `Você: ${message.content} `; // Adiciona o prefixo "Você:" para mensagens enviadas pelo usuário atual
       }
     }
 
@@ -282,4 +288,4 @@ async function renderConversation(contact) {
 }
 
 // Inicia o processo de busca e exibição de contatos
-contactCards('Murilo');
+contactCards('Lucas');
