@@ -212,6 +212,12 @@ function displayContacts(contacts) {
 function handleContactClick(contact) {
   console.log('Contact clicked:', contact);
 
+  // Obter o JID do contato clicado
+  const destinationJid = contact.jid;
+
+  // Atualizar o campo oculto com o destinationJid
+  document.getElementById('destination-jid').value = destinationJid;
+
   // Lógica de renderização da conversa do contato à direita da barra lateral
   renderConversation(contact);
 }
@@ -287,5 +293,103 @@ async function renderConversation(contact) {
   }
 }
 
+// Função assíncrona para enviar uma mensagem de texto
+async function sendMessage(instanceName, number, text) {
+  try {
+    const response = await fetch(`http://localhost:8084/message/sendText/${instanceName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': token,
+      },
+      body: JSON.stringify({
+        number: number,
+        options: {
+          delay: 1200,
+          presence: 'composing',
+        },
+        textMessage: {
+          text: text,
+        },
+      }),
+    });
+
+    // Verifica se a solicitação foi bem-sucedida
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    console.log('Mensagem enviada:', responseData);
+    // Aqui você pode adicionar lógica adicional, como atualizar a interface de usuário para refletir a mensagem enviada.
+  } catch (error) {
+    console.error('Error sending message:', error.message);
+    // Aqui você pode lidar com erros, como exibir uma mensagem de erro na interface de usuário.
+  }
+}
+
+// Função para enviar mídia
+async function sendMedia(instanceName, formData) {
+  try {
+    console.log('Enviando mídia...');
+    const response = await fetch(`http://localhost:8084/message/sendMedia/${instanceName}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: token,
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    console.log('Mídia enviada:', responseData);
+  } catch (error) {
+    console.error('Error sending media:', error.message);
+  }
+}
+
+// Adiciona um evento de clique ao botão de enviar mídia
+document.getElementById('send-media-button').addEventListener('click', async () => {
+  const mediaInput = document.getElementById('media-input');
+  const mediaFile = mediaInput.files[0];
+
+  if (mediaFile) {
+    console.log('Arquivo selecionado:', mediaFile.name);
+    const formData = new FormData();
+
+    // Obter o destinationJid armazenado
+    const destinationJid = document.getElementById('destination-jid').value;
+    formData.append('number', destinationJid);
+    formData.append('mediaMessage[mediatype]', mediaFile.type.split('/')[0]);
+    formData.append('mediaMessage[fileName]', mediaFile.name);
+    formData.append('mediaMessage[media]', mediaFile);
+
+    await sendMedia('Murilo', formData);
+  }
+});
+
+// Adiciona um evento de clique ao botão de enviar mensagem
+document.getElementById('send-button').addEventListener('click', async () => {
+  const messageInput = document.getElementById('message-input');
+  const message = messageInput.value.trim(); // Obtém o texto da mensagem e remove espaços em branco extras
+
+  // Verifica se a mensagem não está vazia
+  if (message !== '') {
+    // Obter o destinationJid armazenado
+    const destinationJid = document.getElementById('destination-jid').value
+    // Substitua 'SeuInstanceName' pelo nome da instância correta que você deseja usar ao enviar a mensagem.
+    // Substitua '123@broadcast' pelo número dinâmico correto.
+    await sendMessage('Murilo', destinationJid, message);
+
+    // Limpa o campo de entrada após o envio da mensagem
+    messageInput.value = '';
+  }
+});
+
+
 // Inicia o processo de busca e exibição de contatos
-contactCards('Lucas');
+contactCards('Murilo');
