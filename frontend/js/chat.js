@@ -3,17 +3,17 @@ const token = 'zYzP7ocstxh3Sscefew4FZTCu4ehnM8v4hu';
 
 // Mapeamento dos tipos de mensagem para emojis correspondentes
 const messageTypeLookup = {
-  imageMessage: '📷 Imagem', // Android, IOS, WEB e Desktop - No IOS retorna imageMessage mesmo temporaria
-  audioMessage: '🎶 Áudio', // Android, IOS, WEB e Desktop - No IOS retorna audioMessage mesmo temporaria - Desktop nao tem Audio Temporario
-  videoMessage: '📹 Vídeo', // Android, IOS, WEB e Desktop - No IOS retorna videoMessage mesmo temporaria
+  imageMessage: '📷 Imagem', // Android, IOS, WEB e Desktop - No IOS retorna imageMessage mesmo temporaria *TRATADO
+  audioMessage: '🎶 Áudio', // Android, IOS, WEB e Desktop - No IOS retorna audioMessage mesmo temporaria - Desktop nao tem Audio Temporario *TRATADO
+  videoMessage: '📹 Vídeo', // Android, IOS, WEB e Desktop - No IOS retorna videoMessage mesmo temporaria *TRATADO
   locationMessage: '📍 Localização', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
-  liveLocationMessage: '📍 Localização em tempo real', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
-  viewOnceMessageV2: '📷  Mídia temporaria', // Foto e Video Temporario - ANDROID e Desktop
-  viewOnceMessage: '📷  Mídia temporaria', // Foto e Video temporario - WEB
-  viewOnceMessageV2Extension: '🎶 Audio Temporario', // Audio temporario - ANDROID e WEB
-  documentMessage: '📎 Arquivo', // Android, IOS, WEB e Desktop
-  contactMessage: '👤 Contato', // Android, IOS, WEB e Desktop
-  stickerMessage: '📃 Figurinha', // Android, IOS, WEB e Desktop
+  liveLocationMessage: '📍 Localização em tempo real', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao 
+  viewOnceMessageV2: '📷  Mídia temporaria', // Foto e Video Temporario - ANDROID e Desktop *TRATADO
+  viewOnceMessage: '📷  Mídia temporaria', // Foto e Video temporario - WEB *TRATADO
+  viewOnceMessageV2Extension: '🎶 Audio Temporario', // Audio temporario - ANDROID e WEB *TRATADO
+  documentMessage: '📎 Arquivo', // Android, IOS, WEB e Desktop *TRATADO
+  contactMessage: '👤 Contato', // Android, IOS, WEB e Desktop *MAIS OU MENOS TRATADO
+  stickerMessage: '📃 Figurinha', // Android, IOS, WEB e Desktop *TRATADO
   pollCreationMessage: '📊 Enquete', // Web e Desktop
   pollCreationMessageV3: '📊 Enquete', // Android e IOS
 };
@@ -129,15 +129,24 @@ async function contactCards(instanceName) {
       let messageContent = '';
       if (item.messageType === 'extendedTextMessage' || item.messageType === 'conversation') {
         messageContent = typeof item.content === 'object' ? item.content.text : item.content;
-      } else if (item.messageType === 'imageMessage' || item.messageType === 'viewOnceMessageV2' || item.messageType === 'viewOnceMessage') {
-        messageContent = await getMediaMessage(item.keyId);
+      } else if (item.messageType === 'imageMessage') {
+        messageContent = item.content.viewOnce ? '📷  Mídia temporária' : await getMediaMessage(item.keyId);
       } else if (item.messageType === 'videoMessage') {
-        messageContent = await getMediaMessage(item.keyId);
+        messageContent = item.content.viewOnce ? '📷  Mídia temporária' : await getMediaMessage(item.keyId);
+      } else if (item.messageType === 'audioMessage') {
+        messageContent = item.content.viewOnce ? '🎶  Áudio temporário' : await getMediaMessage(item.keyId);
       } else if (item.messageType === 'documentMessage') {
         messageContent = await getMediaMessage(item.keyId);
-      } else if (item.messageType === 'audioMessage') {
+      } else if (item.messageType === 'stickerMessage') {
         messageContent = await getMediaMessage(item.keyId);
+      } else if (item.messageType === 'contactMessage') {
+        messageContent = item.content;
+      } else if (item.messageType === 'locationMessage') {
+        messageContent = item.content;
+      } else if (item.messageType === 'pollCreationMessage' || item.messageType === 'pollCreationMessageV3') {
+        messageContent = item.content;
       }
+
       // Adiciona a mensagem ao contato correspondente
       contactsMap.get(item.keyRemoteJid).messages.push({
         name: item.pushName,
@@ -231,25 +240,64 @@ async function renderConversation(contact) {
     const messageContainer = document.createElement('div');
     messageContainer.classList.add('message-container');
 
-    if (message.messageType == 'imageMessage') {
+    const isSentByClient = message.sentByClient;
 
-      const messageImage = new Image(); // document.createElement('img');
-      let fileReader = new FileReader();
-      fileReader.onload = function () {
-        messageImage.src = fileReader.result;
+    // Adiciona a classe "sent_message" se a mensagem foi enviada pelo cliente
+    if (isSentByClient) {
+      messageContainer.classList.add('sent-message');
+    }
+
+    if (message.messageType == 'imageMessage') {
+      if (message.content === '📷  Mídia temporária') {
+        const messageTemporary = document.createElement('p');
+        messageTemporary.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+        messageContainer.appendChild(messageTemporary);
+      } else {
+        const messageImage = new Image(); // document.createElement('img');
+        let fileReader = new FileReader();
+        fileReader.onload = function () {
+          messageImage.src = fileReader.result;
+        }
+        fileReader.readAsDataURL(message.content);
+        messageContainer.appendChild(messageImage);
       }
-      fileReader.readAsDataURL(message.content);
-      messageContainer.appendChild(messageImage);
 
     } else if (message.messageType == 'videoMessage') {
-      const videoMessage = document.createElement('video');
-      videoMessage.controls = true;
-      let fileReader = new FileReader();
-      fileReader.onload = function () {
-        videoMessage.src = fileReader.result;
+      if (message.content === '📷  Mídia temporária') {
+        const messageTemporary = document.createElement('p');
+        messageTemporary.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+        messageContainer.appendChild(messageTemporary);
+      } else {
+        const videoMessage = document.createElement('video');
+        videoMessage.controls = true;
+        let fileReader = new FileReader();
+        fileReader.onload = function () {
+          videoMessage.src = fileReader.result;
+        }
+        fileReader.readAsDataURL(message.content);
+        messageContainer.appendChild(videoMessage);
       }
-      fileReader.readAsDataURL(message.content);
-      messageContainer.appendChild(videoMessage);
+
+    } else if (message.messageType == 'audioMessage') {
+      if (message.content === '🎶  Áudio temporário') {
+        const messageTemporary = document.createElement('p');
+        messageTemporary.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+        messageContainer.appendChild(messageTemporary);
+      } else {
+        const audioMessage = document.createElement('audio');
+        audioMessage.controls = true;
+        let fileReader = new FileReader();
+        fileReader.onload = function () {
+          audioMessage.src = fileReader.result;
+        }
+        fileReader.readAsDataURL(message.content);
+        messageContainer.appendChild(audioMessage);
+      }
+
+    } else if (message.messageType == 'viewOnceMessageV2' || message.messageType == 'viewOnceMessage' || message.messageType == 'viewOnceMessageV2Extension') {
+      const temporaryMessageWarning = document.createElement('p');
+      temporaryMessageWarning.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+      messageContainer.appendChild(temporaryMessageWarning);
 
     } else if (message.messageType == 'documentMessage') {
       const documentMessage = document.createElement('a');
@@ -262,25 +310,72 @@ async function renderConversation(contact) {
       documentMessage.textContent = '📎 Baixar arquivo';
       messageContainer.appendChild(documentMessage);
 
-    } else if (message.messageType == 'audioMessage') {
-      const audioMessage = document.createElement('audio');
-      audioMessage.controls = true;
+    } else if (message.messageType == 'stickerMessage') {
+      const stickerMessage = new Image();
       let fileReader = new FileReader();
       fileReader.onload = function () {
-        audioMessage.src = fileReader.result;
+        stickerMessage.src = fileReader.result;
       }
       fileReader.readAsDataURL(message.content);
-      messageContainer.appendChild(audioMessage);
+      messageContainer.appendChild(stickerMessage);
+
+    } else if (message.messageType === 'contactMessage') {
+      const contactCard = document.createElement('div');
+      contactCard.classList.add('contact-card');
+
+      const contactEmoji = document.createElement('span');
+      contactEmoji.textContent = '👤';
+      contactEmoji.classList.add('contact-emoji');
+
+      const contactDisplayName = document.createElement('span');
+      contactDisplayName.textContent = message.content.displayName;
+      contactDisplayName.classList.add('contact-name');
+
+      contactCard.appendChild(contactEmoji);
+      contactCard.appendChild(contactDisplayName);
+
+      contactCard.addEventListener('click', () => {
+        alert(`Nome: ${message.content.displayName}\nNúmero: ${message.content.vcard.match(/TEL.*:(.*)/)[1]}`);
+      });
+
+      messageContainer.appendChild(contactCard);
+
+    } else if (message.messageType === 'locationMessage') {
+      const locationDiv = document.createElement('div');
+      locationDiv.classList.add('location-div');
+
+      const locationMessage = document.createElement('a');
+      locationMessage.href = `https://www.google.com/maps/search/?api=1&query=${message.content.degreesLatitude},${message.content.degreesLongitude}`;
+      locationMessage.target = '_blank';
+      locationDiv.appendChild(locationMessage);
+
+      const locationImage = document.createElement('img');
+      locationImage.src = `data:image/jpeg;base64,${message.content.jpegThumbnail}`;
+      locationMessage.appendChild(locationImage);
+
+      messageContainer.appendChild(locationDiv);
+    } else if (message.messageType === 'pollCreationMessage' || message.messageType === 'pollCreationMessageV3') {
+      const pollCard = document.createElement('div');
+      pollCard.classList.add('poll-card');
+
+      const pollTitle = document.createElement('h4');
+      pollTitle.textContent = message.content.name;
+      pollCard.appendChild(pollTitle);
+
+      const optionsList = document.createElement('ul');
+      for (const option of message.content.options) {
+        const optionItem = document.createElement('li');
+        optionItem.textContent = option.optionName;
+        optionsList.appendChild(optionItem);
+      }
+      pollCard.appendChild(optionsList);
+
+      messageContainer.appendChild(pollCard);
+
     } else {
       const messageContent = document.createElement('p');
       messageContent.textContent = message.content;
       messageContainer.appendChild(messageContent);
-
-      // Adiciona uma classe para mensagens enviadas pelo usuário atual
-      if (message.sentByClient) {
-        messageContainer.classList.add('sent-message');
-        messageContent.textContent = `Você: ${message.content} `; // Adiciona o prefixo "Você:" para mensagens enviadas pelo usuário atual
-      }
     }
 
     conversationContainer.appendChild(messageContainer);
