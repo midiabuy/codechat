@@ -6,8 +6,8 @@ const messageTypeLookup = {
   imageMessage: '📷 Imagem', // Android, IOS, WEB e Desktop - No IOS retorna imageMessage mesmo temporaria *TRATADO
   audioMessage: '🎶 Áudio', // Android, IOS, WEB e Desktop - No IOS retorna audioMessage mesmo temporaria - Desktop nao tem Audio Temporario *TRATADO
   videoMessage: '📹 Vídeo', // Android, IOS, WEB e Desktop - No IOS retorna videoMessage mesmo temporaria *TRATADO
-  locationMessage: '📍 Localização', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao
-  liveLocationMessage: '📍 Localização em tempo real', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao 
+  locationMessage: '📍 Localização', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao *TRATADO
+  liveLocationMessage: '📍 Localização em tempo real', // Android e IOS - WEB e Desktop nao tem opcao de enviar localizacao *TRATADO
   viewOnceMessageV2: '📷  Mídia temporaria', // Foto e Video Temporario - ANDROID e Desktop *TRATADO
   viewOnceMessage: '📷  Mídia temporaria', // Foto e Video temporario - WEB *TRATADO
   viewOnceMessageV2Extension: '🎶 Audio Temporario', // Audio temporario - ANDROID e WEB *TRATADO
@@ -141,7 +141,7 @@ async function contactCards(instanceName) {
         messageContent = await getMediaMessage(item.keyId);
       } else if (item.messageType === 'contactMessage') {
         messageContent = item.content;
-      } else if (item.messageType === 'locationMessage') {
+      } else if (item.messageType === 'locationMessage' || item.messageType === 'liveLocationMessage') {
         messageContent = item.content;
       } else if (item.messageType === 'pollCreationMessage' || item.messageType === 'pollCreationMessageV3') {
         messageContent = item.content;
@@ -235,11 +235,6 @@ function handleContactClick(contact) {
 async function renderConversation(contact) {
   const conversationContainer = document.getElementById('conversation-container');
   conversationContainer.innerHTML = ''; // Limpa o conteúdo anterior
-
-  // Adiciona um cabeçalho com o nome do contato
-  const contactNameHeader = document.createElement('h3');
-  contactNameHeader.textContent = contact.name;
-  conversationContainer.appendChild(contactNameHeader);
 
   // Itera sobre as mensagens do contato para renderizá-las
   for (const message of contact.messages) {
@@ -346,7 +341,7 @@ async function renderConversation(contact) {
 
       messageContainer.appendChild(contactCard);
 
-    } else if (message.messageType === 'locationMessage') {
+    } else if (message.messageType === 'locationMessage' || message.messageType === 'liveLocationMessage') {
       const locationDiv = document.createElement('div');
       locationDiv.classList.add('location-div');
 
@@ -360,6 +355,7 @@ async function renderConversation(contact) {
       locationMessage.appendChild(locationImage);
 
       messageContainer.appendChild(locationDiv);
+
     } else if (message.messageType === 'pollCreationMessage' || message.messageType === 'pollCreationMessageV3') {
       const pollCard = document.createElement('div');
       pollCard.classList.add('poll-card');
@@ -386,6 +382,21 @@ async function renderConversation(contact) {
 
     conversationContainer.appendChild(messageContainer);
   }
+
+  const contactContainer = document.createElement('div');
+  contactContainer.classList.add('contact-header');
+  conversationContainer.appendChild(contactContainer);
+
+  const contactImage = document.createElement('img');
+  contactImage.src = contact.picture;
+  contactImage.alt = contact.name;
+  contactImage.classList.add('contact-image-header');
+  contactContainer.appendChild(contactImage);
+
+  const contactNameHeader = document.createElement('h3');
+  contactNameHeader.textContent = contact.name;
+  contactNameHeader.classList.add('contact-name-header');
+  contactContainer.appendChild(contactNameHeader);
 }
 
 // Função assíncrona para enviar uma mensagem de texto
@@ -478,7 +489,7 @@ document.getElementById('send-button').addEventListener('click', async () => {
     const destinationJid = document.getElementById('destination-jid').value
     // Substitua 'SeuInstanceName' pelo nome da instância correta que você deseja usar ao enviar a mensagem.
     // Substitua '123@broadcast' pelo número dinâmico correto.
-    await sendMessage('Murilo', destinationJid, message);
+    await sendMessage('Lucas', destinationJid, message);
 
     // Limpa o campo de entrada após o envio da mensagem
     messageInput.value = '';
@@ -487,4 +498,4 @@ document.getElementById('send-button').addEventListener('click', async () => {
 
 
 // Inicia o processo de busca e exibição de contatos
-contactCards('Murilo');
+contactCards('Lucas');

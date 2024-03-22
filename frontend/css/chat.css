@@ -1,12 +1,19 @@
 body {
   display: flex;
   flex-direction: row;
+  background-color: #E2E1DD;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 #contacts-container {
+  width: 45%;
   display: flex;
   flex-direction: column;
-  margin: 0 auto;
+  margin: 85px 0 0 85px;
+  border: #45a049 1px solid;
+  background-color: #fff;
+  height: 100vh;
+  overflow: auto;
 }
 
 .contact-card {
@@ -17,7 +24,6 @@ body {
   padding: 15px;
   border-bottom: 1px solid #ddd;
   width: 100%;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
 }
 
 .contact-card img {
@@ -43,11 +49,51 @@ body {
   margin: 0;
 }
 
+/* Estilização das conversas */
+
+.conversation {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 85px;
+  margin-right: 85px;
+  background-color: #EFEAE2;
+  height: 100vh;
+  overflow: auto;
+}
+
+.conversation-container {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  margin: 0 0 0 0;
+  overflow-y: auto;
+}
+
+.contact-header {
+  display: flex;
+  flex-direction: row;
+  width: calc(100% - 20px);
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  background-color: #F0F2F5;
+  position: sticky;
+  top: 0;
+}
+
+.contact-header img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
 .message-container {
   margin: 5px;
   padding: 10px;
   border-radius: 5px;
   background-color: #f0f0f0;
+  align-self: flex-start; /* Para alinhar as mensagens recebidas à esquerda */
 }
 
 .sent-message {
@@ -57,7 +103,10 @@ body {
 
 /* Estilos para a caixa de entrada de mensagem */
 .message-input {
-  margin-top: 20px;
+  display: flex;
+  flex-direction: row;
+  position: fixed;
+  bottom: 0;
 }
 
 .message-input input[type="text"] {
