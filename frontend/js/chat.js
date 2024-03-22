@@ -517,7 +517,7 @@ async function sendMedia(instanceName, data) {
       throw new Error(`Error: ${response.status} - ${response.statusText}`);
     }
 
-    console.log('Mídia enviada com sucesso!');
+    console.log('Mídia enviada com sucessoo!');
   } catch (error) {
     console.error('Error sending media:', error.message);
   }
