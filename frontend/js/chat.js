@@ -179,6 +179,21 @@ async function contactCards(instanceName) {
   }
 }
 
+function getMessageContent(message) {
+  let content = '';
+  const messageType = message.messageType;
+
+  // Verifica se messageTypeLookup tem um valor correspondente
+  if (messageTypeLookup.hasOwnProperty(messageType)) {
+    content = messageTypeLookup[messageType];
+  } else {
+    // Se não houver um valor correspondente, apenas usa o conteúdo original da mensagem
+    content = message.content;
+  }
+
+  return content;
+}
+
 // Função para exibir os contatos na interface do usuário
 function displayContacts(contacts) {
   const contactsContainer = document.getElementById('contacts-container');
@@ -200,9 +215,10 @@ function displayContacts(contacts) {
     contactName.textContent = contact.name;
 
     const lastMessageContent = document.createElement('p');
+    lastMessageContent.maxLength = 50;
     lastMessageContent.textContent = contact.lastMessage.sentByClient
-      ? `Você: ${contact.lastMessage.content}`
-      : contact.lastMessage.content;
+      ? `Você: ${getMessageContent(contact.lastMessage)}`
+      : getMessageContent(contact.lastMessage);
 
     detailsContainer.appendChild(contactName);
     detailsContainer.appendChild(lastMessageContent);
