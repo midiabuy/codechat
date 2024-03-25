@@ -215,7 +215,6 @@ function displayContacts(contacts) {
     contactName.textContent = contact.name;
 
     const lastMessageContent = document.createElement('p');
-    lastMessageContent.maxLength = 50;
     lastMessageContent.textContent = contact.lastMessage.sentByClient
       ? `Você: ${getMessageContent(contact.lastMessage)}`
       : getMessageContent(contact.lastMessage);

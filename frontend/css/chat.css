@@ -88,6 +88,12 @@ body {
   top: 93px;
 }
 
+.contact-header h2 {
+  font-size: 1.2em;
+  font-weight: 400;
+  margin: 0;
+}
+
 .contact-header img {
   width: 60px;
   height: 60px;
@@ -103,6 +109,13 @@ body {
   align-self: flex-start; /* Para alinhar as mensagens recebidas à esquerda */
   border-radius: 0px 20px 20px 20px;
   background-color: #dae5ff;
+}
+
+.message-container img, video {
+  max-width: 350px;
+  max-height: 350px;
+  border-radius: 20px;
+  padding: 2px;
 }
 
 .sent-message {
