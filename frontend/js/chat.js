@@ -497,7 +497,7 @@ async function sendMessage(instanceName, number, text) {
 }
 
 // Função para enviar mídia
-async function sendMedia(instanceName, data) {
+async function sendMedia(instanceName, formData, mediaType) {
   try {
     console.log('Enviando mídia...');
 
@@ -509,7 +509,7 @@ async function sendMedia(instanceName, data) {
           Authorization: `Bearer ${token}`,
           apikey: token,
         },
-        body: data,
+        body: formData,
       },
     );
 
@@ -535,28 +535,28 @@ document.getElementById('send-media-button').addEventListener('click', async () 
     const destinationJid = document.getElementById('destination-jid').value;
 
     const formData = new FormData();
-
     formData.append('number', destinationJid);
-    // formData.append('caption', 'playlist');
     formData.append('attachment', mediaFile);
-
-    // Defina o tipo de mídia com base no tipo de arquivo ou de alguma outra lógica
-    let mediaType;
-    if (mediaFile.type.startsWith('audio')) {
-      mediaType = 'audio';
-    } else if (mediaFile.type.startsWith('image')) {
-      mediaType = 'image';
-    } else {
-      mediaType = 'document';
-    }
-
-    formData.append('mediatype', mediaType);
+    formData.append('mediatype', getMediaType(mediaFile)); // Definindo dinamicamente o tipo de mídia
     formData.append('presence', 'composing');
     formData.append('delay', 1200);
 
     await sendMedia('Murilo', formData);
   }
 });
+
+// Função para obter o tipo de mídia com base no arquivo selecionado
+function getMediaType(file) {
+  if (file.type.startsWith('image')) {
+    return 'image';
+  } else if (file.type.startsWith('video')) {
+    return 'video';
+  } else if (file.type.startsWith('audio')) {
+    return 'audio';
+  } else {
+    return 'document';
+  }
+}
 
 // Adiciona um evento de clique ao botão de enviar mensagem
 document.getElementById('send-button').addEventListener('click', async () => {
