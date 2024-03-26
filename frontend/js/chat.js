@@ -106,10 +106,11 @@ async function contactCards(instanceName) {
       );
 
       const mediaBuffer = await mediaResponse.arrayBuffer();
-      const mediaBlob = new Blob([mediaBuffer], { type: mediaResponse.headers.get('content-type') });
+      const mediaBlob = new Blob([mediaBuffer], {
+        type: mediaResponse.headers.get('content-type'),
+      });
       return mediaBlob;
     }
-
 
     // Mapa para armazenar os contatos
     const contactsMap = new Map();
@@ -127,23 +128,39 @@ async function contactCards(instanceName) {
 
       // Determina o conteúdo da mensagem
       let messageContent = '';
-      if (item.messageType === 'extendedTextMessage' || item.messageType === 'conversation') {
-        messageContent = typeof item.content === 'object' ? item.content.text : item.content;
+      if (
+        item.messageType === 'extendedTextMessage' ||
+        item.messageType === 'conversation'
+      ) {
+        messageContent =
+          typeof item.content === 'object' ? item.content.text : item.content;
       } else if (item.messageType === 'imageMessage') {
-        messageContent = item.content.viewOnce ? '📷  Mídia temporária' : await getMediaMessage(item.keyId);
+        messageContent = item.content.viewOnce
+          ? '📷  Mídia temporária'
+          : await getMediaMessage(item.keyId);
       } else if (item.messageType === 'videoMessage') {
-        messageContent = item.content.viewOnce ? '📷  Mídia temporária' : await getMediaMessage(item.keyId);
+        messageContent = item.content.viewOnce
+          ? '📷  Mídia temporária'
+          : await getMediaMessage(item.keyId);
       } else if (item.messageType === 'audioMessage') {
-        messageContent = item.content.viewOnce ? '🎶  Áudio temporário' : await getMediaMessage(item.keyId);
+        messageContent = item.content.viewOnce
+          ? '🎶  Áudio temporário'
+          : await getMediaMessage(item.keyId);
       } else if (item.messageType === 'documentMessage') {
         messageContent = await getMediaMessage(item.keyId);
       } else if (item.messageType === 'stickerMessage') {
         messageContent = await getMediaMessage(item.keyId);
       } else if (item.messageType === 'contactMessage') {
         messageContent = item.content;
-      } else if (item.messageType === 'locationMessage' || item.messageType === 'liveLocationMessage') {
+      } else if (
+        item.messageType === 'locationMessage' ||
+        item.messageType === 'liveLocationMessage'
+      ) {
         messageContent = item.content;
-      } else if (item.messageType === 'pollCreationMessage' || item.messageType === 'pollCreationMessageV3') {
+      } else if (
+        item.messageType === 'pollCreationMessage' ||
+        item.messageType === 'pollCreationMessageV3'
+      ) {
         messageContent = item.content;
       }
 
@@ -266,22 +283,23 @@ async function renderConversation(contact) {
     if (message.messageType == 'imageMessage') {
       if (message.content === '📷  Mídia temporária') {
         const messageTemporary = document.createElement('p');
-        messageTemporary.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+        messageTemporary.textContent =
+          '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
         messageContainer.appendChild(messageTemporary);
       } else {
         const messageImage = new Image(); // document.createElement('img');
         let fileReader = new FileReader();
         fileReader.onload = function () {
           messageImage.src = fileReader.result;
-        }
+        };
         fileReader.readAsDataURL(message.content);
         messageContainer.appendChild(messageImage);
       }
-
     } else if (message.messageType == 'videoMessage') {
       if (message.content === '📷  Mídia temporária') {
         const messageTemporary = document.createElement('p');
-        messageTemporary.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+        messageTemporary.textContent =
+          '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
         messageContainer.appendChild(messageTemporary);
       } else {
         const videoMessage = document.createElement('video');
@@ -289,15 +307,15 @@ async function renderConversation(contact) {
         let fileReader = new FileReader();
         fileReader.onload = function () {
           videoMessage.src = fileReader.result;
-        }
+        };
         fileReader.readAsDataURL(message.content);
         messageContainer.appendChild(videoMessage);
       }
-
     } else if (message.messageType == 'audioMessage') {
       if (message.content === '🎶  Áudio temporário') {
         const messageTemporary = document.createElement('p');
-        messageTemporary.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+        messageTemporary.textContent =
+          '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
         messageContainer.appendChild(messageTemporary);
       } else {
         const audioMessage = document.createElement('audio');
@@ -305,17 +323,20 @@ async function renderConversation(contact) {
         let fileReader = new FileReader();
         fileReader.onload = function () {
           audioMessage.src = fileReader.result;
-        }
+        };
         fileReader.readAsDataURL(message.content);
         messageContainer.classList.add('audio-message');
         messageContainer.appendChild(audioMessage);
       }
-
-    } else if (message.messageType == 'viewOnceMessageV2' || message.messageType == 'viewOnceMessage' || message.messageType == 'viewOnceMessageV2Extension') {
+    } else if (
+      message.messageType == 'viewOnceMessageV2' ||
+      message.messageType == 'viewOnceMessage' ||
+      message.messageType == 'viewOnceMessageV2Extension'
+    ) {
       const temporaryMessageWarning = document.createElement('p');
-      temporaryMessageWarning.textContent = '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
+      temporaryMessageWarning.textContent =
+        '⚠️ Esta mensagem é temporária e por motivos de privacidade só pode ser vista no seu celular.';
       messageContainer.appendChild(temporaryMessageWarning);
-
     } else if (message.messageType == 'documentMessage') {
       const documentContainer = document.createElement('p');
       const documentMessage = document.createElement('a');
@@ -323,21 +344,19 @@ async function renderConversation(contact) {
       fileReader.onload = function () {
         documentMessage.href = fileReader.result;
         documentMessage.download = 'file';
-      }
+      };
       fileReader.readAsDataURL(message.content);
       documentMessage.textContent = '📎 Baixar arquivo';
       documentContainer.appendChild(documentMessage);
       messageContainer.appendChild(documentContainer);
-
     } else if (message.messageType == 'stickerMessage') {
       const stickerMessage = new Image();
       let fileReader = new FileReader();
       fileReader.onload = function () {
         stickerMessage.src = fileReader.result;
-      }
+      };
       fileReader.readAsDataURL(message.content);
       messageContainer.appendChild(stickerMessage);
-
     } else if (message.messageType === 'contactMessage') {
       const contactCard = document.createElement('div');
       contactCard.classList.add('contact-card');
@@ -354,12 +373,16 @@ async function renderConversation(contact) {
       contactCard.appendChild(contactDisplayName);
 
       contactCard.addEventListener('click', () => {
-        alert(`Nome: ${message.content.displayName}\nNúmero: ${message.content.vcard.match(/TEL.*:(.*)/)[1]}`);
+        alert(
+          `Nome: ${message.content.displayName}\nNúmero: ${message.content.vcard.match(/TEL.*:(.*)/)[1]}`,
+        );
       });
 
       messageContainer.appendChild(contactCard);
-
-    } else if (message.messageType === 'locationMessage' || message.messageType === 'liveLocationMessage') {
+    } else if (
+      message.messageType === 'locationMessage' ||
+      message.messageType === 'liveLocationMessage'
+    ) {
       const locationDiv = document.createElement('div');
       messageContainer.classList.add('location');
 
@@ -373,12 +396,17 @@ async function renderConversation(contact) {
       locationMessage.appendChild(locationImage);
 
       const locationText = document.createElement('p');
-      locationText.textContent = message.messageType === 'locationMessage' ? '📍 Localização' : '📍 Localização em tempo real';
+      locationText.textContent =
+        message.messageType === 'locationMessage'
+          ? '📍 Localização'
+          : '📍 Localização em tempo real';
       locationDiv.appendChild(locationText);
 
       messageContainer.appendChild(locationDiv);
-
-    } else if (message.messageType === 'pollCreationMessage' || message.messageType === 'pollCreationMessageV3') {
+    } else if (
+      message.messageType === 'pollCreationMessage' ||
+      message.messageType === 'pollCreationMessageV3'
+    ) {
       const pollCard = document.createElement('div');
       pollCard.classList.add('poll-card');
 
@@ -395,7 +423,6 @@ async function renderConversation(contact) {
       pollCard.appendChild(optionsList);
 
       messageContainer.appendChild(pollCard);
-
     } else {
       const messageContent = document.createElement('p');
       if (message.content.includes('http')) {
@@ -433,24 +460,27 @@ async function renderConversation(contact) {
 // Função assíncrona para enviar uma mensagem de texto
 async function sendMessage(instanceName, number, text) {
   try {
-    const response = await fetch(`http://localhost:8084/message/sendText/${instanceName}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': token,
+    const response = await fetch(
+      `http://localhost:8084/message/sendText/${instanceName}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          apikey: token,
+        },
+        body: JSON.stringify({
+          number: number,
+          options: {
+            delay: 1200,
+            presence: 'composing',
+          },
+          textMessage: {
+            text: text,
+          },
+        }),
       },
-      body: JSON.stringify({
-        number: number,
-        options: {
-          delay: 1200,
-          presence: 'composing',
-        },
-        textMessage: {
-          text: text,
-        },
-      }),
-    });
+    );
 
     // Verifica se a solicitação foi bem-sucedida
     if (!response.ok) {
@@ -467,23 +497,27 @@ async function sendMessage(instanceName, number, text) {
 }
 
 // Função para enviar mídia
-async function sendMedia(instanceName, formData) {
+async function sendMedia(instanceName, formData, mediaType) {
   try {
     console.log('Enviando mídia...');
-    const response = await fetch(`http://localhost:8084/message/sendMedia/${instanceName}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: token,
+
+    const response = await fetch(
+      `http://localhost:8084/message/sendMediaFile/${instanceName}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: token,
+        },
+        body: formData,
       },
-      body: formData,
-    });
+    );
+
     if (!response.ok) {
       throw new Error(`Error: ${response.status} - ${response.statusText}`);
     }
 
-    const responseData = await response.json();
-    console.log('Mídia enviada:', responseData);
+    console.log('Mídia enviada com sucesso!');
   } catch (error) {
     console.error('Error sending media:', error.message);
   }
@@ -496,18 +530,33 @@ document.getElementById('send-media-button').addEventListener('click', async () 
 
   if (mediaFile) {
     console.log('Arquivo selecionado:', mediaFile.name);
-    const formData = new FormData();
 
     // Obter o destinationJid armazenado
     const destinationJid = document.getElementById('destination-jid').value;
+
+    const formData = new FormData();
     formData.append('number', destinationJid);
-    formData.append('mediaMessage[mediatype]', mediaFile.type.split('/')[0]);
-    formData.append('mediaMessage[fileName]', mediaFile.name);
-    formData.append('mediaMessage[media]', mediaFile);
+    formData.append('attachment', mediaFile);
+    formData.append('mediatype', getMediaType(mediaFile)); // Definindo dinamicamente o tipo de mídia
+    formData.append('presence', 'composing');
+    formData.append('delay', 1200);
 
     await sendMedia('Murilo', formData);
   }
 });
+
+// Função para obter o tipo de mídia com base no arquivo selecionado
+function getMediaType(file) {
+  if (file.type.startsWith('image')) {
+    return 'image';
+  } else if (file.type.startsWith('video')) {
+    return 'video';
+  } else if (file.type.startsWith('audio')) {
+    return 'audio';
+  } else {
+    return 'document';
+  }
+}
 
 // Adiciona um evento de clique ao botão de enviar mensagem
 document.getElementById('send-button').addEventListener('click', async () => {
@@ -517,7 +566,7 @@ document.getElementById('send-button').addEventListener('click', async () => {
   // Verifica se a mensagem não está vazia
   if (message !== '') {
     // Obter o destinationJid armazenado
-    const destinationJid = document.getElementById('destination-jid').value
+    const destinationJid = document.getElementById('destination-jid').value;
     // Substitua 'SeuInstanceName' pelo nome da instância correta que você deseja usar ao enviar a mensagem.
     // Substitua '123@broadcast' pelo número dinâmico correto.
     await sendMessage('Lucas', destinationJid, message);
@@ -526,7 +575,6 @@ document.getElementById('send-button').addEventListener('click', async () => {
     messageInput.value = '';
   }
 });
-
 
 // Inicia o processo de busca e exibição de contatos
 contactCards('Lucas');
