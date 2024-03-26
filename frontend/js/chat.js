@@ -307,6 +307,7 @@ async function renderConversation(contact) {
           audioMessage.src = fileReader.result;
         }
         fileReader.readAsDataURL(message.content);
+        messageContainer.classList.add('audio-message');
         messageContainer.appendChild(audioMessage);
       }
 
@@ -316,6 +317,7 @@ async function renderConversation(contact) {
       messageContainer.appendChild(temporaryMessageWarning);
 
     } else if (message.messageType == 'documentMessage') {
+      const documentContainer = document.createElement('p');
       const documentMessage = document.createElement('a');
       let fileReader = new FileReader();
       fileReader.onload = function () {
@@ -324,7 +326,8 @@ async function renderConversation(contact) {
       }
       fileReader.readAsDataURL(message.content);
       documentMessage.textContent = '📎 Baixar arquivo';
-      messageContainer.appendChild(documentMessage);
+      documentContainer.appendChild(documentMessage);
+      messageContainer.appendChild(documentContainer);
 
     } else if (message.messageType == 'stickerMessage') {
       const stickerMessage = new Image();
@@ -358,7 +361,7 @@ async function renderConversation(contact) {
 
     } else if (message.messageType === 'locationMessage' || message.messageType === 'liveLocationMessage') {
       const locationDiv = document.createElement('div');
-      locationDiv.classList.add('location-div');
+      messageContainer.classList.add('location');
 
       const locationMessage = document.createElement('a');
       locationMessage.href = `https://www.google.com/maps/search/?api=1&query=${message.content.degreesLatitude},${message.content.degreesLongitude}`;
@@ -368,6 +371,10 @@ async function renderConversation(contact) {
       const locationImage = document.createElement('img');
       locationImage.src = `data:image/jpeg;base64,${message.content.jpegThumbnail}`;
       locationMessage.appendChild(locationImage);
+
+      const locationText = document.createElement('p');
+      locationText.textContent = message.messageType === 'locationMessage' ? '📍 Localização' : '📍 Localização em tempo real';
+      locationDiv.appendChild(locationText);
 
       messageContainer.appendChild(locationDiv);
 
@@ -391,7 +398,16 @@ async function renderConversation(contact) {
 
     } else {
       const messageContent = document.createElement('p');
-      messageContent.textContent = message.content;
+      if (message.content.includes('http')) {
+        const messageContentURL = document.createElement('a');
+        messageContentURL.textContent = message.content;
+        messageContentURL.href = message.content;
+        messageContentURL.target = '_blank';
+        messageContent.appendChild(messageContentURL);
+      } else {
+        messageContent.textContent = message.content;
+        messageContainer.appendChild(messageContent);
+      }
       messageContainer.appendChild(messageContent);
     }
 
