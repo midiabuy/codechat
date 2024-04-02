@@ -569,7 +569,7 @@ document.getElementById('send-button').addEventListener('click', async () => {
     const destinationJid = document.getElementById('destination-jid').value;
     // Substitua 'SeuInstanceName' pelo nome da instância correta que você deseja usar ao enviar a mensagem.
     // Substitua '123@broadcast' pelo número dinâmico correto.
-    await sendMessage('Lucas', destinationJid, message);
+    await sendMessage('Murilo', destinationJid, message);
 
     // Limpa o campo de entrada após o envio da mensagem
     messageInput.value = '';
@@ -577,4 +577,4 @@ document.getElementById('send-button').addEventListener('click', async () => {
 });
 
 // Inicia o processo de busca e exibição de contatos
-contactCards('Lucas');
+contactCards('Murilo');
