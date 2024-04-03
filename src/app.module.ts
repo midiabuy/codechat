@@ -74,6 +74,7 @@ import { ErrorMiddle } from './middle/error.middle';
 import 'express-async-errors';
 import cors from 'cors';
 import { docsRouter } from './config/scala.config';
+import cors from 'cors';
 
 export function describeRoutes(
   rootPath: string,
