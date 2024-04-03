@@ -73,6 +73,7 @@ import { InstanceGuard } from './guards/instance.guard';
 import { JwtGuard } from './guards/auth.guard';
 import { ErrorMiddle } from './middle/error.middle';
 import 'express-async-errors';
+import cors from 'cors';
 
 export function describeRoutes(
   rootPath: string,
@@ -104,6 +105,8 @@ export enum HttpStatus {
 
 export async function AppModule(context: Map<string, any>) {
   const app = express();
+
+  app.use(cors());
 
   const configService = new ConfigService();
 
