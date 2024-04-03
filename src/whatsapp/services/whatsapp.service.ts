@@ -771,8 +771,8 @@ export class WAStartupService {
           const { id } = await this.repository.message.create({ data: messageRaw });
           messageRaw.id = id;
         }
-        
-        this.eventEmitter.emit("on.sendMessage", messageRaw)
+
+        this.eventEmitter.emit('on.sendMessage', messageRaw);
         this.logger.log(messageRaw);
 
         await this.sendDataWebhook('messagesUpsert', messageRaw);
@@ -1251,7 +1251,7 @@ export class WAStartupService {
         });
         messageSent.id = id;
       }
-      
+
       this.sendDataWebhook('sendMessage', messageSent).catch((error) =>
         this.logger.error(error),
       );
@@ -1269,7 +1269,7 @@ export class WAStartupService {
   }
 
   // Send Message Controller
-  public async textMessage(data: SendTextDto) {    
+  public async textMessage(data: SendTextDto) {
     return await this.sendMessageWithTyping(
       data.number,
       {
@@ -1366,14 +1366,20 @@ export class WAStartupService {
     return this.sendMessageWithTyping<AnyMessageContent>(
       data.number,
       {
-        audio: isURL(data.audioMessage.audio)
-          ? { url: data.audioMessage.audio }
-          : Buffer.from(data.audioMessage.audio, 'base64'),
+        audio: Buffer.from(
+          JSON.parse(data.audioMessage as any).audio.replace(
+            'data:audio/ogg;base64,',
+            '',
+          ),
+          'base64',
+        ),
         ptt: true,
         mimetype: 'audio/aac',
       },
       { presence: 'recording', delay: data?.options?.delay },
-    );
+    )
+      .then(console.log)
+      .catch(console.log);
   }
 
   public async audioWhatsAppFile(data: AudioMessageFileDto, file: Express.Multer.File) {

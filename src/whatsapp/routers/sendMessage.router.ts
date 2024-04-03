@@ -114,7 +114,7 @@ export function MessageRouter(
         return res.status(HttpStatus.CREATED).json(response);
       },
     )
-    .post(routerPath('sendWhatsAppAudio'), ...guards, async (req, res) => {
+    .post(routerPath('sendWhatsAppAudio'), async (req, res) => {
       const response = await dataValidate<SendAudioDto>({
         request: req,
         schema: audioMessageSchema,

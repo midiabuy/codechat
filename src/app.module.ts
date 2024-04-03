@@ -79,7 +79,6 @@ import cors from 'cors';
 import http from 'http';
 import { Server as WebSocketServer } from 'socket.io';
 
-
 export function describeRoutes(
   rootPath: string,
   router: Router,
@@ -235,40 +234,40 @@ export async function AppModule(context: Map<string, any>) {
   /////////////////////////
   // Websocket
   /////////////////////////
-  
+
   logger.log('INICIANDO SERVIDOR WEBSOCKET');
 
   const server = http.createServer(app);
-  const io = new WebSocketServer(server, { 
+  const io = new WebSocketServer(server, {
     cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
+      origin: '*',
+      methods: ['GET', 'POST'],
     },
-    transports: ["websocket"],
+    transports: ['websocket'],
     connectionStateRecovery: {},
     pingInterval: 60000,
     pingTimeout: 60000,
     upgradeTimeout: 30000,
   });
 
-  eventEmitter.addListener("on.sendMessage", (message) => {
-    io.emit("onmessage", message);
+  eventEmitter.addListener('on.sendMessage', (message) => {
+    io.emit('onmessage', message);
   });
 
-  eventEmitter.addListener("on.contactsUpsert", (contact) => {
-    io.emit("oncontacts", contact);
-  })
+  eventEmitter.addListener('on.contactsUpsert', (contact) => {
+    io.emit('oncontacts', contact);
+  });
 
   io.on('connection', (socket) => {
     // Lógica para manipular conexões WebSocket
-    logger.log('a user connected');    
+    logger.log('a user connected');
   });
 
   io.on('disconnect', () => {
     logger.log('user disconnected');
   });
 
-  context.set("server", server);
+  context.set('server', server);
 
   /////////////////////////
 
@@ -278,4 +277,3 @@ export async function AppModule(context: Map<string, any>) {
   context.set('module:redisCache', redisCache);
   context.set('module:config', configService);
 }
-
