@@ -106,7 +106,7 @@ export enum HttpStatus {
 export async function AppModule(context: Map<string, any>) {
   const app = express();
 
-  app.use(cors);
+  app.use(cors());
 
   const configService = new ConfigService();
 

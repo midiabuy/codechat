@@ -84,9 +84,12 @@ export class SendMessageController {
   }
 
   public async sendWhatsAppAudio({ instanceName }: InstanceDto, data: SendAudioDto) {
+    data = { ...data };
+
     if (isBase64(data?.audioMessage.audio)) {
       throw new BadRequestException('Owned media must be a url');
     }
+    return await this.waMonitor.waInstances.get(instanceName).audioWhatsapp(data);
   }
 
   public async sendWhatsAppAudioFile(
